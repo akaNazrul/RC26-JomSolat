@@ -1,0 +1,286 @@
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
+import { supabase } from '@/lib/supabase';
+
+export default function SignUp() {
+  const navigate = useNavigate();
+  const { setUser } = useAppStore();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [zone, setZone] = useState<'gelugor' | 'usm'>('gelugor');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // Register with Supabase
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: name,
+            zone: zone,
+          },
+        },
+      });
+
+      if (signUpError) {
+        setError(signUpError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (data.user) {
+        // Create user profile in public.users table
+        const { error: profileError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            display_name: name,
+            email: email,
+            zone: zone,
+            role: 'user',
+            provider: 'email',
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+
+        // Set user in store
+        const user = {
+          id: data.user.id,
+          display_name: name,
+          email: email,
+          zone: zone,
+          role: 'user' as const,
+          provider: 'email' as const,
+          created_at: new Date().toISOString(),
+          last_seen_at: null,
+        };
+
+        setUser(user);
+        navigate('/home');
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+      console.error('Signup error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/home`,
+        },
+      });
+      if (authError) {
+        setError(authError.message);
+      }
+    } catch (err) {
+      setError('Failed to sign up with Google');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-bg-base flex flex-col">
+      {/* Header */}
+      <header className="p-4">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
+            <span className="text-white font-arabic text-lg">م</span>
+          </div>
+          <span className="font-display text-xl text-text-primary">JomSolat</span>
+        </Link>
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col justify-center px-4 py-8">
+        <div className="max-w-sm mx-auto w-full">
+          <h1 className="font-display text-3xl text-text-primary mb-2">Create Account</h1>
+          <p className="font-body text-text-secondary mb-8">Join the JomSolat community</p>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block font-body text-sm text-text-secondary mb-2">Full Name</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block font-body text-sm text-text-secondary mb-2">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block font-body text-sm text-text-secondary mb-2">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block font-body text-sm text-text-secondary mb-2">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
+                />
+              </div>
+            </div>
+
+            {/* Zone Selector */}
+            <div>
+              <label className="block font-body text-sm text-text-secondary mb-2">Prayer Time Zone</label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setZone('gelugor')}
+                  className={`flex-1 py-3 rounded-xl border ${
+                    zone === 'gelugor'
+                      ? 'bg-accent-primary/20 border-accent-primary text-accent-primary'
+                      : 'bg-bg-surface border-border-color text-text-secondary'
+                  } font-body font-medium transition-colors`}
+                >
+                  USM / Gelugor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setZone('usm')}
+                  className={`flex-1 py-3 rounded-xl border ${
+                    zone === 'usm'
+                      ? 'bg-accent-primary/20 border-accent-primary text-accent-primary'
+                      : 'bg-bg-surface border-border-color text-text-secondary'
+                  } font-body font-medium transition-colors`}
+                >
+                  USM Induk
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl bg-accent-warm text-white font-body font-semibold hover:bg-accent-warm/90 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? 'Creating account...' : 'Sign Up'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-color" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-bg-base text-text-muted">or continue with</span>
+            </div>
+          </div>
+
+          {/* OAuth Buttons */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleGoogleSignUp}
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl bg-white border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+              </svg>
+              <span className="font-body font-medium text-gray-700">Google</span>
+            </button>
+          </div>
+
+          {/* Login Link */}
+          <p className="mt-8 text-center font-body text-sm text-text-secondary">
+            Already have an account?{' '}
+            <Link to="/login" className="text-accent-primary font-semibold">
+              Log In
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -47,20 +47,24 @@ function MobileNav() {
   );
 }
 
-// Desktop Top Navigation with rounded rectangle, app name, theme toggle, and notification
+// Desktop Top Navigation - Logo, nav items in rounded bar, icons outside
 function DesktopNav() {
   const { theme, toggleTheme } = useAppStore();
   
   return (
-    <nav className="hidden md:block md:fixed md:top-4 md:left-4 md:right-4 md:z-50">
-      <div className="bg-bg-elevated border border-border-color rounded-2xl shadow-lg px-4 py-2">
-        <div className="flex items-center justify-between">
-          {/* Left: App Name */}
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-accent-warm font-display">JomSolat</span>
-          </div>
-          
-          {/* Center: Navigation Items */}
+    <nav className="hidden md:block md:fixed md:top-4 md:left-4 md:right-4 md:z-50 md:py-2 md:h-16">
+      <div className="flex items-center gap-4 w-full justify-between">
+        {/* Left: Logo (outside the rounded rectangle) */}
+        <div className="flex-shrink-0">
+          <img
+            src="/assets/jomSolat-logo-noBg.svg"
+            alt="JomSolat Logo"
+            className="h-20 w-auto"
+          />
+        </div>
+        
+        {/* Center: Navigation Items (inside rounded rectangle - centered) */}
+        <div className="bg-bg-elevated border border-border-color rounded-2xl shadow-lg px-4 py-2 md:h-12 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="flex items-center gap-1">
             {navItems.map(({ to, icon: Icon, label }) => (
               <NavLink
@@ -83,27 +87,27 @@ function DesktopNav() {
               </NavLink>
             ))}
           </div>
+        </div>
+        
+        {/* Right: Theme Toggle & Notification (outside the rounded rectangle) */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Notification Bell */}
+          <button className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors">
+            <Bell size={20} strokeWidth={2} />
+          </button>
           
-          {/* Right: Theme Toggle & Notification */}
-          <div className="flex items-center gap-2">
-            {/* Notification Bell */}
-            <button className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors">
-              <Bell size={20} strokeWidth={2} />
-            </button>
-            
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? (
-                <Sun size={20} strokeWidth={2} />
-              ) : (
-                <Moon size={20} strokeWidth={2} />
-              )}
-            </button>
-          </div>
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? (
+              <Sun size={20} strokeWidth={2} />
+            ) : (
+              <Moon size={20} strokeWidth={2} />
+            )}
+          </button>
         </div>
       </div>
     </nav>

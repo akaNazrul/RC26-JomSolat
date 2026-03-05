@@ -25,9 +25,10 @@ export default function Home() {
     { to: '/events', icon: Calendar, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
   ];
 
+  {/* should retrieve the data from social media pusat islam media for their latest info*/}
   const upcomingEvents = [
     { title: 'Taraweeh Prayer', date: 'Every night in Ramadan', type: 'taraweeh' },
-    { title: 'Friday Sermon', date: "Jumu'ah 12:00 PM", type: 'ceramah' },
+    { title: 'Friday khutbah', date: "Jumu'ah 1:30 PM", type: 'ceramah' },
   ];
 
   return (
@@ -36,10 +37,12 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color md:hidden">
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-              <span className="text-white font-arabic text-lg">م</span>
-            </div>
-            <span className="font-display text-xl text-text-primary">JomSolat</span>
+            {/* mobile view of logo */}
+            <img
+              src="/assets/jomSolat-logo-noBg.svg"
+              alt="JomSolat"
+              className="h-16 w-auto"
+            />
           </div>
         </div>
       </header>

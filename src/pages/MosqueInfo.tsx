@@ -1,7 +1,12 @@
-import { ChevronLeft, Phone, Mail, Globe, MapPin, Clock, Heart } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronLeft, Phone, Mail, Globe, MapPin, Clock, Heart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+const QR_SRC = '/assets/Screenshot 2026-03-05 181900.png';
+
 export default function MosqueInfo() {
+  const [qrEnlarged, setQrEnlarged] = useState(false);
+
   const infoRows = [
     { icon: MapPin, label: 'Address', value: 'Pusat Islam USM, Universiti Sains Malaysia, 11800 Gelugor, Penang' },
     { icon: Phone, label: 'Phone', value: '+604-653 5432' },
@@ -93,11 +98,48 @@ export default function MosqueInfo() {
           <Heart size={24} className="text-accent-warm mx-auto mb-2" />
           <h3 className="font-body font-semibold text-text-primary mb-1">Support the Mosque</h3>
           <p className="font-body text-sm text-text-secondary mb-3">Your donations help us maintain and improve our services</p>
-          <div className="w-32 h-32 mx-auto bg-white rounded-xl flex items-center justify-center">
-            <span className="text-xs text-gray-400">QR Code</span>
-          </div>
-          <p className="font-body text-xs text-text-muted mt-2">Scan to Donate</p>
+          <button
+            onClick={() => setQrEnlarged(true)}
+            className="group mx-auto block focus:outline-none"
+            aria-label="Enlarge QR code"
+          >
+            <img
+              src={QR_SRC}
+              alt="Donation QR Code"
+              className="w-36 h-36 mx-auto bg-white rounded-xl object-contain ring-2 ring-transparent group-hover:ring-accent-warm transition-all"
+            />
+            <p className="font-body text-xs text-text-muted mt-2 group-hover:text-accent-warm transition-colors">
+              Click to enlarge
+            </p>
+          </button>
         </div>
+
+        {/* QR Lightbox */}
+        {qrEnlarged && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setQrEnlarged(false)}
+          >
+            <div
+              className="relative bg-white rounded-2xl p-4 shadow-2xl mx-6 max-w-sm w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setQrEnlarged(false)}
+                className="absolute top-3 right-3 p-1.5 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} className="text-gray-700" />
+              </button>
+              <img
+                src={QR_SRC}
+                alt="Donation QR Code (enlarged)"
+                className="w-full rounded-xl object-contain"
+              />
+              <p className="text-center font-body text-sm text-gray-500 mt-3">Scan to Donate</p>
+            </div>
+          </div>
+        )}
 
         {/* Map */}
         <div className="h-48 rounded-2xl overflow-hidden bg-bg-surface border border-border-color">

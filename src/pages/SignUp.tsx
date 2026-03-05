@@ -4,6 +4,9 @@ import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
 
+// Prayer zone is fixed to USM Induk / Gelugor — all users are part of this community
+const FIXED_ZONE = 'gelugor' as const;
+
 export default function SignUp() {
   const navigate = useNavigate();
   const { setUser } = useAppStore();
@@ -11,7 +14,6 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [zone, setZone] = useState<'gelugor' | 'usm'>('gelugor');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,14 +36,13 @@ export default function SignUp() {
     }
 
     try {
-      // Register with Supabase
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             display_name: name,
-            zone: zone,
+            zone: FIXED_ZONE,
           },
         },
       });
@@ -52,37 +53,27 @@ export default function SignUp() {
         return;
       }
 
-      if (data.user) {
-        // Create user profile in public.users table
-        const { error: profileError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            display_name: name,
-            email: email,
-            zone: zone,
-            role: 'user',
-            provider: 'email',
-          });
+      // Profile row is created automatically by the Supabase DB trigger (handle_new_user).
+      // No manual INSERT needed here.
 
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-        }
-
-        // Set user in store
+      if (data.user && data.session) {
         const user = {
           id: data.user.id,
           display_name: name,
           email: email,
-          zone: zone,
+          zone: FIXED_ZONE,
           role: 'user' as const,
           provider: 'email' as const,
           created_at: new Date().toISOString(),
           last_seen_at: null,
         };
-
         setUser(user);
         navigate('/home');
+      } else if (data.user) {
+        // Email confirmation is enabled — user must verify email first
+        setError('Account created! Please check your email to confirm your account before logging in.');
+      } else {
+        setError('Please check your email to confirm your account before logging in.');
       }
     } catch (err) {
       setError('Something went wrong. Please try again.');
@@ -99,15 +90,16 @@ export default function SignUp() {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/home`,
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { prompt: 'select_account' },
         },
       });
       if (authError) {
         setError(authError.message);
+        setIsLoading(false);
       }
     } catch (err) {
       setError('Failed to sign up with Google');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -201,35 +193,6 @@ export default function SignUp() {
                   placeholder="••••••••"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
-              </div>
-            </div>
-
-            {/* Zone Selector */}
-            <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Prayer Time Zone</label>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setZone('gelugor')}
-                  className={`flex-1 py-3 rounded-xl border ${
-                    zone === 'gelugor'
-                      ? 'bg-accent-primary/20 border-accent-primary text-accent-primary'
-                      : 'bg-bg-surface border-border-color text-text-secondary'
-                  } font-body font-medium transition-colors`}
-                >
-                  USM / Gelugor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setZone('usm')}
-                  className={`flex-1 py-3 rounded-xl border ${
-                    zone === 'usm'
-                      ? 'bg-accent-primary/20 border-accent-primary text-accent-primary'
-                      : 'bg-bg-surface border-border-color text-text-secondary'
-                  } font-body font-medium transition-colors`}
-                >
-                  USM Induk
-                </button>
               </div>
             </div>
 

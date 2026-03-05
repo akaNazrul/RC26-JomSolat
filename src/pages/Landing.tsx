@@ -2,23 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, CalendarDays, MapPin, ChevronDown, Moon, Sun } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import DonutTimer from '@/components/DonutTimer';
-import { fetchPrayerTimes, PRAYER_ORDER, formatTime } from '@/lib/prayerTimes';
+import { fetchPrayerTimes, PRAYER_ORDER, formatTime, type PrayerTimeData } from '@/lib/prayerTimes';
 
 export default function Landing() {
   const { theme, toggleTheme } = useAppStore();
-  const [prayerTimes, setPrayerTimes] = useState<any>(null);
-  const [scrolled, setScrolled] = useState(false);
+  const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
 
   useEffect(() => {
     // Fetch prayer times on mount
     fetchPrayerTimes().then(setPrayerTimes);
-
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -190,20 +182,23 @@ export default function Landing() {
           
           {prayerTimes ? (
             <div className="p-5 rounded-2xl bg-bg-surface border border-border-color">
-              {PRAYER_ORDER.map((prayer) => (
-                <div
-                  key={prayer.key}
-                  className="flex items-center justify-between py-3 border-b border-border-color last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="font-arabic text-lg text-text-secondary">{prayer.nameAr}</span>
-                    <span className="font-body font-medium text-text-primary">{prayer.label}</span>
+              {PRAYER_ORDER.map((prayer) => {
+                const prayerTime = prayerTimes[prayer.key as keyof PrayerTimeData] as string;
+                return (
+                  <div
+                    key={prayer.key}
+                    className="flex items-center justify-between py-3 border-b border-border-color last:border-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-arabic text-lg text-text-secondary">{prayer.nameAr}</span>
+                      <span className="font-body font-medium text-text-primary">{prayer.label}</span>
+                    </div>
+                    <span className="font-body text-text-primary">
+                      {prayerTime ? formatTime(prayerTime) : '--:--'}
+                    </span>
                   </div>
-                  <span className="font-body text-text-primary">
-                    {formatTime(prayerTimes[prayer.key as keyof typeof prayerTimes])}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
               
               <p className="mt-4 text-sm text-text-secondary text-center">
                 Sign up to unlock reminders, events, and your personal prayer tracker →

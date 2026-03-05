@@ -1,39 +1,48 @@
-// Prayer time API utilities using Al-Adhan API
-// Method 11 = JAKIM (Jabatan Kemajuan Islam Malaysia)
+// Prayer time API utilities using api.waktusolat.app
+// Zone PNG01 = Pulau Pinang (covers entire Penang state including Gelugor)
+// Data source: JAKIM E-Solat official data
 
-const AL_ADHAN_API = 'https://api.aladhan.com/v1/timingsByCity';
+const WAKTUSOLAT_API = 'https://api.waktusolat.app';
+const ZONE = 'PNG01'; // Pulau Pinang – Gelugor, Penang
 
-export interface AlAdhanTimings {
-  Fajr: string;
-  Sunrise: string;
-  Dhuhr: string;
-  Asr: string;
-  Maghrib: string;
-  Isha: string;
+export interface WaktuSolatPrayer {
+  day: number;
+  hijri: string; // "YYYY-MM-DD" hijri date
+  fajr: number;   // Unix timestamp (seconds)
+  syuruk: number;
+  dhuhr: number;
+  asr: number;
+  maghrib: number;
+  isha: number;
 }
 
-export interface AlAdhanResponse {
-  data: {
-    timings: AlAdhanTimings;
-    date: {
-      readable: string;
-      hijri: {
-        day: string;
-        month: {
-          en: string;
-          ar: string;
-        };
-        year: string;
-      };
-      gregorian: {
-        day: string;
-        month: {
-          number: number;
-        };
-        year: string;
-      };
-    };
-  };
+export interface WaktuSolatResponse {
+  zone: string;
+  year: number;
+  month: string;
+  month_number: number;
+  last_updated: string | null;
+  prayers: WaktuSolatPrayer[];
+}
+
+// Hijri month name mappings
+const HIJRI_MONTHS_EN: Record<number, string> = {
+  1: 'Muharram', 2: 'Safar', 3: "Rabi' al-Awwal", 4: "Rabi' al-Thani",
+  5: 'Jumada al-Awwal', 6: 'Jumada al-Thani', 7: 'Rajab', 8: "Sha'ban",
+  9: 'Ramadan', 10: 'Shawwal', 11: "Dhu al-Qi'dah", 12: 'Dhu al-Hijjah',
+};
+
+const HIJRI_MONTHS_AR: Record<number, string> = {
+  1: 'محرم', 2: 'صفر', 3: 'ربيع الأول', 4: 'ربيع الثاني',
+  5: 'جمادى الأولى', 6: 'جمادى الآخرة', 7: 'رجب', 8: 'شعبان',
+  9: 'رمضان', 10: 'شوال', 11: 'ذو القعدة', 12: 'ذو الحجة',
+};
+
+function unixToTimeString(unix: number): string {
+  const date = new Date(unix * 1000);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 }
 
 export interface PrayerTimeData {
@@ -56,37 +65,50 @@ export interface PrayerTimeData {
   };
 }
 
-export async function fetchPrayerTimes(city: string = 'Gelugor', country: string = 'Malaysia'): Promise<PrayerTimeData> {
-  const today = new Date().toISOString().split('T')[0];
-  
+export async function fetchPrayerTimes(): Promise<PrayerTimeData> {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
   try {
     const response = await fetch(
-      `${AL_ADHAN_API}?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=11&school=0&date=${today}`
+      `${WAKTUSOLAT_API}/v2/solat/${ZONE}?year=${year}&month=${month}`
     );
-    
+
     if (!response.ok) {
-      throw new Error('Failed to fetch prayer times');
+      throw new Error(`Failed to fetch prayer times: ${response.status}`);
     }
-    
-    const data: AlAdhanResponse = await response.json();
-    
+
+    const data: WaktuSolatResponse = await response.json();
+
+    const todayPrayer = data.prayers.find((p) => p.day === day);
+    if (!todayPrayer) {
+      throw new Error('No prayer data found for today');
+    }
+
+    // Parse hijri date string "YYYY-MM-DD"
+    const [hijriYear, hijriMonth, hijriDay] = todayPrayer.hijri
+      .split('-')
+      .map(Number);
+
     return {
-      fajr: data.data.timings.Fajr,
-      sunrise: data.data.timings.Sunrise,
-      dhuhr: data.data.timings.Dhuhr,
-      asr: data.data.timings.Asr,
-      maghrib: data.data.timings.Maghrib,
-      isha: data.data.timings.Isha,
+      fajr: unixToTimeString(todayPrayer.fajr),
+      sunrise: unixToTimeString(todayPrayer.syuruk),
+      dhuhr: unixToTimeString(todayPrayer.dhuhr),
+      asr: unixToTimeString(todayPrayer.asr),
+      maghrib: unixToTimeString(todayPrayer.maghrib),
+      isha: unixToTimeString(todayPrayer.isha),
       hijri: {
-        day: data.data.date.hijri.day,
-        month: data.data.date.hijri.month.en,
-        monthAr: data.data.date.hijri.month.ar,
-        year: data.data.date.hijri.year,
+        day: String(hijriDay),
+        month: HIJRI_MONTHS_EN[hijriMonth] ?? `Month ${hijriMonth}`,
+        monthAr: HIJRI_MONTHS_AR[hijriMonth] ?? '',
+        year: String(hijriYear),
       },
       gregorian: {
-        day: data.data.date.gregorian.day,
-        month: data.data.date.gregorian.month.number,
-        year: data.data.date.gregorian.year,
+        day: String(day),
+        month: month,
+        year: String(year),
       },
     };
   } catch (error) {

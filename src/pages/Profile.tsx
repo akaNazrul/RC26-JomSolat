@@ -1,17 +1,33 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Bell, Shield, LogOut, Trash2, ChevronRight, User, Settings } from 'lucide-react';
+import { Moon, Bell, Shield, LogOut, Trash2, ChevronRight, Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { supabase } from '@/lib/supabase';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, theme, toggleTheme, setUser, setIsAuthenticated } = useAppStore();
   const [notifications, setNotifications] = useState(true);
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      navigate('/');
+    }
+  };
+
+  const getZoneDisplayName = (zone: string | undefined) => {
+    switch (zone) {
+      case 'usm': return 'USM Induk';
+      case 'gelugor': return 'USM / Gelugor';
+      case 'manual': return 'Manual Zone';
+      default: return 'USM / Gelugor';
+    }
   };
 
   const settingsSections = [
@@ -51,7 +67,7 @@ export default function Profile() {
             </h2>
             <p className="font-body text-sm text-text-secondary">{user?.email || 'Not signed in'}</p>
             <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-accent-primary/20 text-xs text-accent-primary">
-              {user?.zone || 'gelugor'} zone
+              {getZoneDisplayName(user?.zone)} zone
             </span>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  ChevronLeft, Plus, Calendar, Users, BarChart3, 
+  ChevronLeft, Plus, Calendar, Users, 
   Edit, Trash2, X, Loader2, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';

@@ -49,7 +49,7 @@ export default function Events() {
       const formattedEvents: EventData[] = (data || []).map(event => ({
         id: event.id,
         title: event.title,
-        type: event.type,
+        type: event.type as EventData['type'],
         date: event.event_date,
         time: event.event_time || 'TBA',
         location: event.location || 'TBA',

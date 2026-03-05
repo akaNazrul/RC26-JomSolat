@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
 
@@ -18,6 +18,27 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
+    // Client-side validation
+    if (!email.trim()) {
+      setError('Please enter your email address');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password.trim()) {
+      setError('Please enter your password');
+      setIsLoading(false);
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
@@ -26,6 +47,7 @@ export default function Login() {
 
       if (authError) {
         setError(authError.message);
+        setIsLoading(false);
         return;
       }
 
@@ -70,15 +92,15 @@ export default function Login() {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/home`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (authError) {
         setError(authError.message);
+        setIsLoading(false);
       }
     } catch (err) {
       setError('Failed to sign in with Google');
-    } finally {
       setIsLoading(false);
     }
   };

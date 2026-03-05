@@ -5,19 +5,30 @@ import { fetchPrayerTimes, PRAYER_ORDER, formatTime, getCurrentPrayer, type Pray
 import { useAppStore } from '@/store/useAppStore';
 
 export default function PrayerTimesPage() {
-  const { userZone } = useAppStore();
+  const { user, userZone } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Get zone display name
+  const getZoneDisplayName = () => {
+    const zone = user?.zone || userZone || 'gelugor';
+    switch (zone) {
+      case 'usm': return 'USM Induk';
+      case 'manual': return 'Manual Zone';
+      default: return 'USM (Gelugor)';
+    }
+  };
+
   useEffect(() => {
+    setLoading(true);
     fetchPrayerTimes().then((times) => {
       setPrayerTimes(times);
       const { current } = getCurrentPrayer(times);
       setCurrentPrayer(current);
       setLoading(false);
     });
-  }, [userZone]);
+  }, [userZone, user?.zone]);
 
   if (loading) {
     return (
@@ -34,7 +45,7 @@ export default function PrayerTimesPage() {
   return (
     <div className="min-h-screen bg-bg-base">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color">
+      <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color md:hidden">
         <div className="flex items-center gap-2 px-4 py-4">
           <Link to="/home" className="p-2 -ml-2 rounded-full hover:bg-bg-surface">
             <ChevronLeft size={24} className="text-text-primary" />
@@ -43,11 +54,19 @@ export default function PrayerTimesPage() {
         </div>
       </header>
 
-      <div className="p-4 space-y-4">
+      {/* Desktop Header - Centered */}
+      <header className="hidden md:block sticky top-20 z-40 bg-bg-base/80 backdrop-blur-md">
+        <div className="text-center py-6">
+          <h1 className="font-display text-3xl text-text-primary">Prayer Times</h1>
+        </div>
+      </header>
+
+      {/* Full width on both mobile and desktop, centered via Layout wrapper */}
+      <div className="p-4 space-y-4 md:px-8">
         {/* Zone Selector */}
         <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-bg-surface border border-border-color">
           <span className="font-body text-sm text-text-secondary">Zone:</span>
-          <span className="font-body font-semibold text-accent-primary">USM (Gelugor)</span>
+          <span className="font-body font-semibold text-accent-primary">{getZoneDisplayName()}</span>
         </div>
 
         {/* Date */}

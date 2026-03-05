@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Moon, Sun, Bell, Building2, Waves, Car, Calendar, ChevronRight } from 'lucide-react';
+import { Building2, Waves, Car, Calendar, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import DonutTimer from '@/components/DonutTimer';
 import { fetchPrayerTimes, PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 
 export default function Home() {
-  const { theme, toggleTheme, user, userZone, setUserZone } = useAppStore();
+  const { user } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string>('fajr');
 
@@ -32,8 +32,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-bg-base">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color">
+      {/* Header — visible on mobile only; desktop uses the top Navbar */}
+      <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color md:hidden">
         <div className="flex items-center justify-between px-4 py-4">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
@@ -41,25 +41,14 @@ export default function Home() {
             </div>
             <span className="font-display text-xl text-text-primary">JomSolat</span>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-bg-surface text-text-primary"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button className="p-2 rounded-full bg-bg-surface text-text-primary relative">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-accent-warm" />
-            </button>
-          </div>
         </div>
       </header>
 
-      <div className="px-4 py-6 space-y-6">
+
+      <div className="px-4 py-6 space-y-6 md:px-8">
         {/* Greeting */}
-        <div>
-          <h1 className="font-display text-2xl text-text-primary">
+        <div className="md:text-center">
+          <h1 className="font-display text-2xl md:text-3xl text-text-primary">
             Assalamualaikum, {user?.display_name || 'Guest'}
           </h1>
           <p className="font-body text-sm text-text-secondary">
@@ -80,23 +69,23 @@ export default function Home() {
           )}
         </div>
 
-        {/* Prayer Time Strip */}
-        <div className="overflow-x-auto pb-2 -mx-4 px-4">
-          <div className="flex gap-2 min-w-max">
+        {/* Prayer Time Strip — centered grid on mobile, full grid on desktop */}
+        <div className="md:overflow-visible md:mx-0 md:px-0">
+          <div className="grid grid-cols-5 gap-2">
             {PRAYER_ORDER.map((prayer) => {
               const isActive = currentPrayer === prayer.key;
               
               return (
                 <button
                   key={prayer.key}
-                  className={`flex-shrink-0 px-4 py-3 rounded-xl min-w-[80px] text-center transition-all ${
+                  className={`px-2 py-3 rounded-xl text-center transition-all ${
                     isActive
                       ? 'bg-accent-warm text-white'
                       : 'bg-bg-surface text-text-primary border border-border-color'
                   }`}
                 >
-                  <span className="font-arabic text-xs block mb-1">{prayer.nameAr}</span>
-                  <span className="font-body text-sm font-medium">
+                  <span className="font-arabic text-[10px] md:text-xs block mb-1">{prayer.nameAr}</span>
+                  <span className="font-body text-xs md:text-sm font-medium">
                     {prayerTimes ? formatTime(prayerTimes[prayer.key as keyof PrayerTimeData] as string) : '--:--'}
                   </span>
                 </button>
@@ -108,7 +97,7 @@ export default function Home() {
         {/* Quick Access Grid */}
         <div>
           <h2 className="font-display text-lg text-text-primary mb-3">Quick Access</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickAccessCards.map((card) => (
               <Link
                 key={card.to}

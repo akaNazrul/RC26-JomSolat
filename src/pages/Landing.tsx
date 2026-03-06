@@ -1,16 +1,33 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, CalendarDays, MapPin, ChevronDown, Moon, Sun } from 'lucide-react';
+import { Clock, CalendarDays, MapPin, Moon, Sun } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { PRAYER_ORDER, formatTime, type PrayerTimeData } from '@/lib/prayerTimes';
+
+// Constants for images
+const HERO_IMAGES = [
+  '/assets/masjid-drone-view.png',
+  '/assets/masjidUSM-topView.png',
+  '/assets/masjidUSM-lowAngle.png'
+];
 
 export default function Landing() {
   const { theme, toggleTheme, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     // Use cached prayer data from store
     fetchPrayerData().then(setPrayerTimes);
+  }, []);
+
+  // Image slider effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000); // Change image every 5 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -20,75 +37,84 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-bg-base">
       {/* Hero Section */}
-      <section className="relative min-h-screen flex flex-col">
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-bg-base z-10" />
+      <section className="relative min-h-[90vh] md:min-h-screen flex flex-col justify-center">
+        {/* Background Image Slider */}
+        {HERO_IMAGES.map((img, index) => (
+          <div 
+            key={img}
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ease-in-out pointer-events-none ${
+              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        ))}
+
+        {/* Dark overlay for readability */}
+        <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
         
-        {/* Hero background */}
-        <div className="absolute inset-0 bg-bg-base">
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute top-20 left-10 w-64 h-64 rounded-full bg-accent-primary blur-3xl" />
-            <div className="absolute bottom-40 right-10 w-80 h-80 rounded-full bg-accent-warm blur-3xl" />
-          </div>
-        </div>
+        {/* Bottom gradient to blend smoothly into the rest of the page */}
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-bg-base to-transparent z-10 pointer-events-none" />
 
         {/* Header */}
-        <header className="relative z-20 flex items-center justify-between px-4 py-4 pt-12">
+        <header className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-4 md:px-8 lg:px-12 py-6 pointer-events-auto">
           <div className="flex items-center gap-2">
             <img
               src="/assets/v2-SVG.svg"
               alt="JomSolat"
-              className="h-10 w-auto"
+              className="h-10 md:h-12 w-auto brightness-0 invert drop-shadow-md transition-all duration-300"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 md:gap-4">
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full bg-bg-surface/50 text-text-primary"
+              className="p-2 md:p-2.5 rounded-full bg-black/20 hover:bg-black/40 text-white backdrop-blur-md transition-colors border border-white/10"
             >
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
+            {/* Get Started - Visible on all screen sizes */}
+            <Link
+              to="/signup"
+              className="flex py-2 md:py-2.5 px-4 md:px-6 rounded-full bg-[#62b959] text-white font-body font-semibold text-xs md:text-sm hover:bg-[#52a04a] transition-all shadow-lg"
+            >
+              Get Started
+            </Link>
           </div>
         </header>
 
         {/* Hero Content */}
-        <div className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 text-center pt-20">
-          {/* Arabic Title */}
-          <p className="font-arabic text-2xl text-amber-200/90 mb-4" style={{ textShadow: '0 0 20px rgba(251, 191, 36, 0.3)' }}>
-            مسجد الملك خالد
-          </p>
-          
+        <div className="relative z-20 flex-1 flex flex-col items-center justify-center px-4 text-center pt-24 md:pt-20">
           {/* Main Headline */}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-text-primary mb-4 leading-tight">
+          <h1 className="font-display text-4xl sm:text-5xl md:text-6xl text-white mb-6 leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
             Your Masjid.<br />Your Community.<br />Your Daily Guide.
           </h1>
           
           {/* Subheadline */}
-          <p className="font-body text-base md:text-lg text-text-secondary max-w-md mb-8">
+          <p className="font-body text-base sm:text-lg md:text-xl text-white/90 max-w-md mb-10 drop-shadow-md px-4">
             Prayer times, events, and everything about Masjid Al-Malik Khalid USM — in one place.
           </p>
           
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-            <Link
-              to="/signup"
-              className="flex-1 py-4 px-6 rounded-full bg-accent-warm text-white font-body font-semibold text-center hover:bg-accent-warm/90 transition-colors"
-            >
-              Get Started — It's Free
-            </Link>
+          <div className="flex justify-center">
+            {/* Learn More */}
             <button
-              onClick={() => scrollToSection('features')}
-              className="flex-1 py-4 px-6 rounded-full border border-text-secondary/30 text-text-primary font-body font-medium text-center hover:bg-bg-surface/50 transition-colors"
+              onClick={() => scrollToSection('heritage')}
+              className="py-3.5 px-8 rounded-full bg-transparent border-2 border-white/80 text-white font-body font-bold text-base transition-all hover:bg-white/10 shadow-lg w-full max-w-xs"
             >
-              Explore the Mosque
+              Learn More
             </button>
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="relative z-20 flex flex-col items-center pb-8 animate-bounce-gentle">
-          <span className="text-xs text-text-muted mb-2">Scroll to discover</span>
-          <ChevronDown size={20} className="text-text-muted" />
+        {/* Dynamic Carousel Indicators */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+          {HERO_IMAGES.map((_, index) => (
+            <div 
+              key={index}
+              onClick={() => setCurrentImageIndex(index)}
+              className={`w-8 h-1.5 cursor-pointer transition-colors duration-300 ${
+                index === currentImageIndex ? 'bg-[#62b959]' : 'bg-white/40 hover:bg-white/60'
+              }`}
+            />
+          ))}
         </div>
       </section>
 

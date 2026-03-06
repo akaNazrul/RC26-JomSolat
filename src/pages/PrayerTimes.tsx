@@ -66,19 +66,26 @@ export default function PrayerTimesPage() {
 
       {/* Full width on both mobile and desktop, centered via Layout wrapper */}
       <div className="p-4 space-y-4 md:px-8">
-        {/* Zone Selector - With Drone View Background */}
-        <div className="relative border border-border-color overflow-hidden rounded-xl h-40">
-          {/* Drone View Image Background */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: 'url(/assets/masjid-drone-view.png)' }}
-          />
+        {/* Zone Selector - With Drone Video Background */}
+        <div className="relative border border-border-color overflow-hidden rounded-xl h-80">
+          {/* Drone Video Background */}
+          <video 
+            autoPlay
+            muted
+            loop
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectFit: 'cover' }}
+          >
+            <source src="/assets/smooth-drone-masjid.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
           {/* Low Blur Overlay */}
           <div className="absolute inset-0 backdrop-blur-[2px] bg-bg-base/50" />
-          {/* Content - Centered in middle of photo */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-            <span className="font-body text-lg text-white font-bold">Zone:</span>
-            <span className="font-body text-xl md:text-2xl text-white font-bold">{getZoneDisplayName()}</span>
+          {/* Content - Centered in middle of photo, single line */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-body text-2xl md:text-3xl text-white font-bold drop-shadow-lg">
+              Zone: {getZoneDisplayName()}
+            </span>
           </div>
         </div>
 

@@ -189,7 +189,7 @@ export default function Home() {
               <p className="font-body text-xs text-text-secondary">Kracked Devs Ramadan Challenge 2026</p>
             </div>
             <div className="px-3 py-1 rounded-full bg-accent-primary/20">
-              <span className="text-xs font-body font-medium text-accent-primary">Murtabug</span>
+              <span className="text-xs font-body font-medium text-accent-primary">MurtaBug</span>
             </div>
           </div>
         </div>

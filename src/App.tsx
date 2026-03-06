@@ -15,7 +15,6 @@ import Facilities from '@/pages/Facilities';
 import Parking from '@/pages/Parking';
 import Events from '@/pages/Events';
 import Profile from '@/pages/Profile';
-import AccountSettings from '@/pages/AccountSettings';
 import AdminDashboard from '@/pages/AdminDashboard';
 
 function App() {
@@ -61,7 +60,6 @@ function App() {
         <Route path="/parking" element={<Parking />} />
         <Route path="/events" element={<Events />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/account-settings" element={<AccountSettings />} />
         {/* Admin dashboard: always registered; component handles its own access check */}
         <Route path="/admin" element={<AdminDashboard />} />
       </Route>

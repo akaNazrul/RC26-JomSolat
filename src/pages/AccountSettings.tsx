@@ -66,7 +66,7 @@ export default function AccountSettings() {
       setDebugInfo('Uploading file to storage...');
       
       // Upload with explicit contentType
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { 
           upsert: true,

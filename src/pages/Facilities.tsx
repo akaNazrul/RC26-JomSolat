@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronLeft, Waves, Users, Accessibility, Wind, BookOpen, School, Car, Bike, CreditCard, UtensilsCrossed, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { ChevronLeft, Waves, Users, Accessibility, Wind, BookOpen, School, Car, Bike, CreditCard, UtensilsCrossed, ChevronDown, ChevronUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface FacilityData {

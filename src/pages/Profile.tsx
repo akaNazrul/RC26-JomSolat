@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Bell, Shield, LogOut, ChevronRight, Settings } from 'lucide-react';
+import { Moon, Bell, Shield, LogOut, ChevronRight, Lock, Loader2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
 
@@ -8,6 +8,9 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, theme, toggleTheme, setUser, setIsAuthenticated } = useAppStore();
   const [notifications, setNotifications] = useState(true);
+  const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
+  const [passwordResetMessage, setPasswordResetMessage] = useState('');
+  const [passwordResetError, setPasswordResetError] = useState('');
 
   const handleLogout = async () => {
     try {
@@ -21,6 +24,36 @@ export default function Profile() {
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!user?.email) {
+      setPasswordResetError('No email found. Please sign in again.');
+      return;
+    }
+
+    setIsSendingPasswordReset(true);
+    setPasswordResetError('');
+    setPasswordResetMessage('');
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        console.error('Password reset error:', error);
+        throw error;
+      }
+
+      setPasswordResetMessage('Password reset link sent to your email!');
+    } catch (error) {
+      console.error('Error sending password reset:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      setPasswordResetError(`Failed to send: ${errorMsg}`);
+    } finally {
+      setIsSendingPasswordReset(false);
+    }
+  };
+
   const getZoneDisplayName = (zone: string | undefined) => {
     switch (zone) {
       case 'usm': return 'USM Induk';
@@ -29,12 +62,6 @@ export default function Profile() {
       default: return 'USM / Gelugor';
     }
   };
-
-  const settingsSections = [
-    { icon: Settings, label: 'Account Settings', onClick: () => navigate('/account-settings') },
-    { icon: Bell, label: 'Notifications', type: 'toggle', value: notifications, onChange: setNotifications },
-    { icon: Moon, label: 'Dark Mode', type: 'toggle', value: theme === 'dark', onChange: () => toggleTheme() },
-  ];
 
   const accountActions = [
     { icon: LogOut, label: 'Sign Out', onClick: handleLogout, color: 'text-red-500' },
@@ -82,32 +109,80 @@ export default function Profile() {
         <div>
           <h3 className="font-body font-semibold text-text-primary mb-3 px-1">Settings</h3>
           <div className="space-y-2">
-            {settingsSections.map((setting, index) => (
-              <button
-                key={index}
-                onClick={setting.type !== 'toggle' ? setting.onClick : undefined}
-                className="w-full flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color"
+            {/* Notifications Toggle */}
+            <button className="w-full flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color">
+              <div className="flex items-center gap-3">
+                <Bell size={20} className="text-text-muted" />
+                <span className="font-body text-text-primary">Notifications</span>
+              </div>
+              <div 
+                className={`w-12 h-6 rounded-full p-1 transition-colors ${
+                  notifications ? 'bg-accent-warm' : 'bg-border-color'
+                }`}
+                onClick={() => setNotifications(!notifications)}
               >
-                <div className="flex items-center gap-3">
-                  <setting.icon size={20} className="text-text-muted" />
-                  <span className="font-body text-text-primary">{setting.label}</span>
-                </div>
-                {setting.type === 'toggle' ? (
-                  <div 
-                    className={`w-12 h-6 rounded-full p-1 transition-colors ${
-                      setting.value ? 'bg-accent-warm' : 'bg-border-color'
-                    }`}
-                    onClick={setting.onChange as () => void}
-                  >
-                    <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                      setting.value ? 'translate-x-6' : 'translate-x-0'
-                    }`} />
-                  </div>
-                ) : (
-                  <ChevronRight size={18} className="text-text-muted" />
-                )}
-              </button>
-            ))}
+                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                  notifications ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </div>
+            </button>
+
+            {/* Dark Mode Toggle */}
+            <button className="w-full flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color">
+              <div className="flex items-center gap-3">
+                <Moon size={20} className="text-text-muted" />
+                <span className="font-body text-text-primary">Dark Mode</span>
+              </div>
+              <div 
+                className={`w-12 h-6 rounded-full p-1 transition-colors ${
+                  theme === 'dark' ? 'bg-accent-warm' : 'bg-border-color'
+                }`}
+                onClick={() => toggleTheme()}
+              >
+                <div className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                  theme === 'dark' ? 'translate-x-6' : 'translate-x-0'
+                }`} />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Password Change */}
+        <div>
+          <h3 className="font-body font-semibold text-text-primary mb-3 px-1">Security</h3>
+          <div className="p-4 rounded-xl bg-bg-surface border border-border-color">
+            {/* Success/Error Messages */}
+            {passwordResetMessage && (
+              <div className="mb-3 p-3 rounded-lg bg-green-500/20 text-green-400 text-sm">
+                {passwordResetMessage}
+              </div>
+            )}
+            {passwordResetError && (
+              <div className="mb-3 p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">
+                {passwordResetError}
+              </div>
+            )}
+            
+            <button
+              onClick={handlePasswordReset}
+              disabled={isSendingPasswordReset || !user?.email}
+              className="w-full flex items-center justify-between p-3 rounded-xl bg-bg-base border border-border-color hover:bg-bg-elevated transition-colors group disabled:opacity-50"
+            >
+              <div className="flex items-center gap-3">
+                <Lock size={20} className="text-text-muted" />
+                <span className="font-body text-text-primary">Change Password</span>
+              </div>
+              {isSendingPasswordReset ? (
+                <Loader2 size={18} className="text-text-muted animate-spin" />
+              ) : (
+                <span className="text-xs text-accent-warm opacity-0 group-hover:opacity-100 transition-opacity">
+                  Click to send reset email →
+                </span>
+              )}
+            </button>
+            <p className="font-body text-xs text-text-muted mt-2">
+              A password reset link will be sent to your email ({user?.email})
+            </p>
           </div>
         </div>
 

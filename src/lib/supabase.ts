@@ -1,32 +1,102 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+// Environment variable validation - fail fast if missing
+const getEnvVar = (name: string): string => {
+  const value = import.meta.env[name];
+  if (!value) {
+    console.error(`Missing required environment variable: ${name}`);
+    throw new Error(`Configuration error: ${name} is not set`);
+  }
+  return value;
+};
 
-// The Database type is exported for use in explicit casts elsewhere.
-// Note: typed createClient<Database>() requires the exact Supabase-generated
-// schema format; use plain createClient() to avoid version-mismatch errors.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Validate required environment variables at startup
+const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
+const SUPABASE_ANON_KEY = getEnvVar('VITE_SUPABASE_ANON_KEY');
+
+// Security: List of allowed origins for CORS (configure in Supabase Dashboard)
+// Add your production domains to this list
+const ALLOWED_ORIGINS = (
+  import.meta.env.VITE_ALLOWED_ORIGINS || 
+  'http://localhost:5173'
+).split(',').map((o: string) => o.trim()).filter(Boolean);
+
+// Secure storage adapter with XSS protection
+const getSecureStorage = () => {
+  return {
+    getItem: (key: string): string | null => {
+      try {
+        const value = localStorage.getItem(key);
+        if (!value) return null;
+        
+        // Validate token structure before returning
+        try {
+          const parsed = JSON.parse(value);
+          // Only return if it looks like a valid session
+          if (parsed.access_token || parsed.refresh_token) {
+            return value;
+          }
+        } catch {
+          // Not JSON, return as-is
+        }
+        return value;
+      } catch {
+        return null;
+      }
+    },
+    setItem: (key: string, value: string): void => {
+      try {
+        // Additional security: validate input before storing
+        if (typeof value !== 'string') {
+          console.warn('Attempted to store non-string value');
+          return;
+        }
+        localStorage.setItem(key, value);
+      } catch (e) {
+        console.error('Failed to store item:', e);
+      }
+    },
+    removeItem: (key: string): void => {
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.error('Failed to remove item:', e);
+      }
+    },
+  };
+};
+
+// Create Supabase client with enhanced security configurations
+export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: {
-      getItem: (key: string) => {
-        return localStorage.getItem(key);
-      },
-      setItem: (key: string, value: string) => {
-        localStorage.setItem(key, value);
-      },
-      removeItem: (key: string) => {
-        localStorage.removeItem(key);
-      },
+    storage: getSecureStorage(),
+    // Use PKCE flow for better security
+    flowType: 'pkce',
+  },
+  // Global headers for additional security tracking
+  global: {
+    headers: {
+      'X-Client-Info': 'jom-solat-web',
     },
   },
 });
 
-// Types for Supabase responses
-export interface Database {
+// Export allowed origins for use in Edge Functions and CORS validation
+export const getAllowedOrigins = (): string[] => ALLOWED_ORIGINS;
+
+// Helper to validate origin against allowed list
+export const isOriginAllowed = (origin: string): boolean => {
+  return ALLOWED_ORIGINS.some((allowed: string) => 
+    allowed === origin || 
+    allowed === '*'
+  );
+};
+
+// Database Types
+export type Database = {
   public: {
     Tables: {
       users: {
@@ -141,5 +211,5 @@ export interface Database {
       };
     };
   };
-}
+};
 

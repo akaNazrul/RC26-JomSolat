@@ -68,17 +68,23 @@ export default function PrayerTimesPage() {
       <div className="p-4 space-y-4 md:px-8">
         {/* Zone Selector - With Drone Video Background */}
         <div className="relative border border-border-color overflow-hidden rounded-xl h-80">
-          {/* Drone Video Background */}
-          <video 
-            autoPlay
-            muted
-            loop
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectFit: 'cover' }}
-          >
-            <source src="/assets/smooth-drone-masjid.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+        {/* Drone Video Background */}
+        <video 
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          poster="/assets/masjid-drone-view.png"
+        >
+          <source src="/assets/smooth-drone-masjid.mp4" type="video/mp4" />
+          {/* Fallback for browsers that don't support video */}
+          <img 
+            src="/assets/masjid-drone-view.png" 
+            alt="Masjid Al-Malik Khalid" 
+            className="w-full h-full object-cover"
+          />
+        </video>
           {/* Low Blur Overlay */}
           <div className="absolute inset-0 backdrop-blur-[2px] bg-bg-base/50" />
           {/* Content - Centered in middle of photo, single line */}
@@ -92,7 +98,7 @@ export default function PrayerTimesPage() {
         {/* Date */}
         <div className="text-center mb-4">
           <h2 className="font-display text-2xl text-text-primary">
-            {prayerTimes?.gregorian.day} {prayerTimes?.gregorian.month}, {prayerTimes?.gregorian.year}
+            {prayerTimes?.gregorian.day} {['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][Number(prayerTimes?.gregorian.month) - 1]}, {prayerTimes?.gregorian.year}
           </h2>
           <p className="font-body text-text-secondary">
             {prayerTimes?.hijri.day} {prayerTimes?.hijri.month} {prayerTimes?.hijri.year}H

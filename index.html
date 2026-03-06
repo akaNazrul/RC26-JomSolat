@@ -3,14 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <!-- icon logo for JomSolat for multiple devices supported -->
-    <link rel="icon" type="image/png" href="public/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg" href="public/favicon.svg" />
-    <link rel="shortcut icon" href="public/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="public/apple-touch-icon.png" />
-    <link rel="mask-icon" href="public/web-app-manifest-512x512.png" color="#1A1A2E" />
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg" href="/favicon.svg" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="mask-icon" href="/web-app-manifest-512x512.png" color="#1A1A2E" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description" content="JomSolat - Prayer times, events, and everything about Masjid Al-Malik Khalid, USM — in one place." />
+    
+    <!-- SEO Meta Tags -->
+    <title>JomSolat - Masjid Al-Malik Khalid Digital Companion | Prayer Times, Events & More</title>
+    <meta name="description" content="JomSolat - Your complete digital companion for Masjid Al-Malik Khalid USM. Get accurate prayer times, upcoming events, facilities info, parking updates, and mosque announcements all in one place." />
+    <meta name="keywords" content="JomSolat, Masjid Al-Malik Khalid, Masjid USM, Prayer Times, Solat Times Malaysia, Mosque Events, USM Mosque, Masjid Malaysia, Islamic Events, Friday Prayer, Solat Jamaah" />
+    <meta name="author" content="JomSolat Team" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
     <meta name="theme-color" content="#1A1A2E" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jomsolat.vercel.app/" />
+    <meta property="og:title" content="JomSolat - Masjid Al-Malik Khalid Digital Companion" />
+    <meta property="og:description" content="Get accurate prayer times, events, facilities info, and mosque updates all in one place." />
+    <meta property="og:image" content="https://jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://jomsolat.vercel.app/" />
+    <meta property="twitter:title" content="JomSolat - Masjid Al-Malik Khalid Digital Companion" />
+    <meta property="twitter:description" content="Get accurate prayer times, events, facilities info, and mosque updates all in one place." />
+    <meta property="twitter:image" content="https://jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
+    
+    <!-- PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="JomSolat" />
@@ -40,8 +63,6 @@
         }
       })();
     </script>
-    
-    <title>JomSolat - Masjid Al-Malik Khalid</title>
   </head>
   <body>
     <div id="root"></div>

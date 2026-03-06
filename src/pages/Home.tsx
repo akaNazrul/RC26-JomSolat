@@ -42,7 +42,12 @@ export default function Home() {
 
   // Immediately available from JS — no API needed
   const today = new Date();
-  const todayLabel = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+  // Fix: Use proper locale-aware date formatting
+  const todayLabel = today.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).replace(/\//g, '/');
 
   const quickAccessCards = [
     { to: '/mosque-info', icon: Building2, label: 'Mosque Info', color: 'bg-accent-primary/20 text-accent-primary' },

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, Phone, Mail, Globe, MapPin, Heart, X } from 'lucide-react';
+import { ChevronLeft, Phone, Mail, Globe, MapPin, Heart, X, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const QR_SRC = '/assets/Screenshot 2026-03-05 181900.png';
@@ -23,7 +23,8 @@ export default function MosqueInfo() {
     { icon: MapPin, label: 'Address', value: 'Universiti Sains Malaysia, 11800 USM, Penang' },
     { icon: Phone, label: 'Phone', value: '04-653 3910/3753' },
     { icon: Mail, label: 'Email', value: 'pusatislamusminduk@gmail.com' },
-    { icon: Globe, label: 'Website', value: 'pusatislam.usm.my' },
+    { icon: Globe, label: 'Website', value: 'pusatislam.usm.my', link: 'https://pusatislam.usm.my' },
+    { icon: Wallet, label: 'Donation', value: 'Infaq Tabung Masjid Al Malik Khalid USM', link: 'https://toyyibpay.com/INFAQ-BOOSTER' },
   ];
 
   return (
@@ -66,7 +67,18 @@ export default function MosqueInfo() {
               </div>
               <div>
                 <p className="font-body text-xs text-text-muted">{row.label}</p>
-                <p className="font-body text-sm text-text-primary">{row.value}</p>
+                {row.link ? (
+                  <a 
+                    href={row.link} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-body text-sm text-accent-primary hover:underline"
+                  >
+                    {row.value}
+                  </a>
+                ) : (
+                  <p className="font-body text-sm text-text-primary">{row.value}</p>
+                )}
               </div>
             </div>
           ))}

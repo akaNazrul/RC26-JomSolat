@@ -6,7 +6,6 @@ interface FacilityData {
   id: string;
   icon: typeof Waves;
   title: string;
-  titleAr: string;
   status: 'available' | 'limited' | 'closed' | 'info';
   shortDescription: string;
   fullDescription: string;
@@ -20,7 +19,6 @@ export default function Facilities() {
       id: 'wudhu',
       icon: Waves,
       title: 'Wudhu Area',
-      titleAr: 'مكان الوضوء',
       status: 'available',
       shortDescription: 'Separate wudhu facilities for men and women. Available 24 hours.',
       fullDescription: 'The mosque provides dedicated wudhu areas for both male and female jemaah located on the ground floor. Both sections are accessible at all hours including outside main prayer times. Both areas are equipped with modern facilities.',
@@ -29,7 +27,6 @@ export default function Facilities() {
       id: 'women',
       icon: Users,
       title: "Women's Section",
-      titleAr: 'قسم النساء',
       status: 'available',
       shortDescription: "Dedicated women's musolla with separate entrance and own wudhu area.",
       fullDescription: "The women's section is fully partitioned from the main hall and accessed via a dedicated entrance on the side of the building. It has its own wudhu facilities. The section is available for all daily prayers, Jumu'ah, and taraweeh.",
@@ -38,7 +35,6 @@ export default function Facilities() {
       id: 'accessibility',
       icon: Accessibility,
       title: 'Wheelchair Access',
-      titleAr: 'إمكانية الوصول',
       status: 'available',
       shortDescription: 'Ramp access and accessible wudhu station available.',
       fullDescription: 'A wheelchair ramp is provided at the main entrance to allow access to the prayer hall. An accessible wudhu station is available on the ground floor. Jemaah requiring assistance are advised to enter via the main ground-floor entrance.',
@@ -47,7 +43,6 @@ export default function Facilities() {
       id: 'ac',
       icon: Wind,
       title: 'Air Conditioning',
-      titleAr: 'تكييف الهواء',
       status: 'available',
       shortDescription: 'Fully air-conditioned main prayer hall.',
       fullDescription: 'The main prayer hall is fully equipped with central air conditioning, providing a comfortable environment for daily prayers, Friday prayers, and all-night taraweeh sessions during Ramadan.',
@@ -56,7 +51,6 @@ export default function Facilities() {
       id: 'library',
       icon: BookOpen,
       title: 'Library',
-      titleAr: 'المكتبة',
       status: 'available',
       shortDescription: 'On-site Islamic library with books, references, and study resources.',
       fullDescription: 'Pusat Islam USM maintains an Islamic library and resource centre within the complex, open to all USM students and staff. The collection covers fiqh, Quran sciences, Islamic history, and general Islamic reading.',
@@ -65,7 +59,6 @@ export default function Facilities() {
       id: 'hall',
       icon: School,
       title: 'Lecture Hall',
-      titleAr: 'قاعة المحاضرات',
       status: 'available',
       shortDescription: 'Dedicated lecture and event hall for ceramah, talks, and programmes.',
       fullDescription: 'The complex includes a lecture hall used for Islamic talks, ceramah, educational programmes, and special events such as Hari Raya gatherings and Maulidur Rasul celebrations.',
@@ -74,7 +67,6 @@ export default function Facilities() {
       id: 'carpark',
       icon: Car,
       title: 'Car Parking',
-      titleAr: 'موقف السيارات',
       status: 'limited',
       shortDescription: 'Car parking available nearby. Limited spaces — peak times on Fridays.',
       fullDescription: 'Car parking is available in the designated lots adjacent to the mosque. Spaces are limited, especially during Friday prayers and Ramadan taraweeh.',
@@ -83,7 +75,6 @@ export default function Facilities() {
       id: 'motopark',
       icon: Bike,
       title: 'Motorcycle Parking',
-      titleAr: 'موقف الدراجات النارية',
       status: 'available',
       shortDescription: 'Motorcycle parking bays available close to the mosque entrance.',
       fullDescription: 'Dedicated motorcycle bays are located close to the mosque entrance. Generally more available than car parking.',
@@ -92,7 +83,6 @@ export default function Facilities() {
       id: 'atm',
       icon: CreditCard,
       title: 'ATM / Banking',
-      titleAr: 'صراف آلي / مصرفية',
       status: 'info',
       shortDescription: 'ATM machines available within the USM campus nearby.',
       fullDescription: 'While there are no ATM machines inside the mosque complex itself, several are available within walking distance on the USM Induk campus.',
@@ -101,10 +91,9 @@ export default function Facilities() {
       id: 'food',
       icon: UtensilsCrossed,
       title: 'Cafeteria',
-      titleAr: 'كافتيريا',
       status: 'info',
       shortDescription: 'Halal food options available in the surrounding campus area.',
-      fullDescription: 'There is no canteen inside the mosque complex, but USM campus cafeterias and food stalls are a short walk away. All campus food outlets are certified halal.',
+      fullDescription: 'There is no canteen inside the mosque complex, but USM campus cafeterias are a short walk away.',
     },
   ];
 
@@ -148,8 +137,7 @@ export default function Facilities() {
                     {facility.status.charAt(0).toUpperCase() + facility.status.slice(1)}
                   </span>
                 </div>
-                <p className="font-arabic text-sm text-text-muted mb-1">{facility.titleAr}</p>
-                <p className="font-body text-sm text-text-secondary">{facility.shortDescription}</p>
+                <p className="font-body text-sm text-text-secondary text-justify">{facility.shortDescription}</p>
               </div>
               {expandedId === facility.id ? (
                 <ChevronUp size={20} className="text-text-muted mt-1" />
@@ -160,7 +148,7 @@ export default function Facilities() {
             
             {expandedId === facility.id && (
               <div className="mt-3 pt-3 border-t border-border-color">
-                <p className="font-body text-sm text-text-secondary leading-relaxed">
+                <p className="font-body text-sm text-text-secondary leading-relaxed text-justify">
                   {facility.fullDescription}
                 </p>
               </div>

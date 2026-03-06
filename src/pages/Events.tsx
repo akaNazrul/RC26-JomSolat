@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 interface EventData {
   id: string;
   title: string;
-  type: 'taraweeh' | 'ceramah' | 'class' | 'community';
+  type: 'Ramadhan' | 'taraweeh' | 'ceramah' | 'class' | 'community';
   date: string;
   time: string;
   location: string;
@@ -72,6 +72,7 @@ export default function Events() {
 
   const getTypeColor = (type: string) => {
     switch (type) {
+      case 'Ramadhan': return 'bg-yellow-500/20 text-yellow-500';
       case 'taraweeh': return 'bg-purple-500/20 text-purple-500';
       case 'ceramah': return 'bg-orange-500/20 text-orange-500';
       case 'class': return 'bg-teal-500/20 text-teal-500';
@@ -99,7 +100,7 @@ export default function Events() {
       <div className="p-4 space-y-4">
         {/* Filter Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {['all', 'taraweeh', 'ceramah', 'class', 'community'].map((filter) => (
+          {['all', 'Ramadhan','taraweeh', 'ceramah', 'class', 'community'].map((filter) => (
             <button
               key={filter}
               onClick={() => setActiveFilter(filter)}

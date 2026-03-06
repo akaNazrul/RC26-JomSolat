@@ -101,12 +101,12 @@ export default function Landing() {
           <h2 className="font-display text-3xl md:text-4xl text-text-primary mb-6">
             Where Faith Meets the Heart of USM
           </h2>
-          <div className="font-body text-sm md:text-base text-text-secondary leading-relaxed space-y-4">
+          <div className="font-body text-sm md:text-base text-text-secondary leading-relaxed space-y-4 text-justify">
             <p>
-              Masjid Al-Malik Khalid stands as the spiritual anchor of Universiti Sains Malaysia's Induk campus in Gelugor, Penang. Named after the late King Khalid of Saudi Arabia, whose generous contribution made its construction possible, the mosque has served the USM community for decades — welcoming students, lecturers, staff, and the surrounding Gelugor neighbourhood to gather, pray, and reflect together.
+              Masjid Al-Malik Khalid stands as the spiritual anchor of Universiti Sains Malaysia's Induk campus in Gelugor, Penang. Named after the late King Khalid of Saudi Arabia, whose generous contribution made its construction possible, the mosque has served the USM community for decades, welcoming students, lecturers, staff, and the surrounding Gelugor neighbourhood to gather, pray, and reflect together.
             </p>
             <p>
-              Managed by Pusat Islam USM, the mosque is more than a place of worship. It hosts Islamic education programmes, Ramadan taraweeh prayers, Friday ceramah, community welfare initiatives, and daily congregational prayers — forming the beating heart of Muslim campus life at USM.
+              Managed by Pusat Islam USM, the mosque is more than a place of worship. It hosts Islamic education programmes, Ramadan taraweeh prayers, Friday ceramah, community welfare initiatives, and daily congregational prayers, forming the beating heart of Muslim campus life at USM.
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function Landing() {
           <h2 className="font-display text-3xl md:text-4xl text-text-primary mb-4">
             Everything You Need, Always at Hand
           </h2>
-          <p className="font-body text-text-secondary mb-8">
+          <p className="font-body text-text-secondary mb-8 text-justify">
             JomSolat brings together all the information you need about Masjid Al-Malik Khalid — so you spend less time searching and more time ibadah.
           </p>
 
@@ -133,9 +133,9 @@ export default function Landing() {
                   <Clock className="text-accent-primary" size={24} />
                 </div>
                 <div>
-                  <h3 className="font-body font-semibold text-text-primary mb-1">Live Prayer Times</h3>
-                  <p className="font-body text-sm text-text-secondary">
-                    Accurate Gelugor-zone prayer times powered by JAKIM data. A live donut countdown always shows you exactly how long until the next prayer — updated every second.
+                  <h3 className="font-body font-semibold text-text-primary mb-1 ">Live Prayer Times</h3>
+                  <p className="font-body text-sm text-text-secondary text-justify">
+                    Accurate Gelugor-zone prayer times powered by JAKIM data. A live donut countdown always shows you exactly how long until the next prayer that updated every second.
                   </p>
                 </div>
               </div>
@@ -149,8 +149,8 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="font-body font-semibold text-text-primary mb-1">Events & Programmes</h3>
-                  <p className="font-body text-sm text-text-secondary">
-                    Taraweeh schedules, Friday ceramah, Islamic classes, and community events — all in one updated feed. Never miss what's happening at your mosque.
+                  <p className="font-body text-sm text-text-secondary text-justify">
+                    Taraweeh schedules, Friday ceramah, Islamic classes, and community events, all in one updated feed. Never miss what's happening at your mosque.
                   </p>
                 </div>
               </div>
@@ -164,7 +164,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <h3 className="font-body font-semibold text-text-primary mb-1">Complete Mosque Guide</h3>
-                  <p className="font-body text-sm text-text-secondary">
+                  <p className="font-body text-sm text-text-secondary text-justify">
                     Wudhu facilities, women's section, wheelchair access, parking zones, and full contact details. Everything a first-timer or regular needs to know.
                   </p>
                 </div>

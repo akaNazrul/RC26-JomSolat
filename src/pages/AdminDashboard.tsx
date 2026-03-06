@@ -32,43 +32,52 @@ export default function AdminDashboard() {
   const isAdmin = user?.role === 'admin';
 
   useEffect(() => {
-    if (isAdmin) {
-      if (activeTab === 'events') fetchEvents();
-      if (activeTab === 'users') fetchUsers();
-    }
+    if (!isAdmin) return;
+    const controller = new AbortController();
+    if (activeTab === 'events') fetchEvents(controller.signal);
+    if (activeTab === 'users') fetchUsers(controller.signal);
+    return () => controller.abort();
   }, [activeTab, isAdmin]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const query = supabase
         .from('events')
         .select('*')
         .order('event_date', { ascending: false });
+      if (signal) query.abortSignal(signal);
+      const { data, error } = await query;
 
+      if (signal?.aborted) return;
       if (error) throw error;
       setEvents(data || []);
-    } catch (error) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') return;
       console.error('Error fetching events:', error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const query = supabase
         .from('users')
         .select('*')
         .order('created_at', { ascending: false });
+      if (signal) query.abortSignal(signal);
+      const { data, error } = await query;
 
+      if (signal?.aborted) return;
       if (error) throw error;
       setUsers(data || []);
-    } catch (error) {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') return;
       console.error('Error fetching users:', error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
@@ -173,16 +182,17 @@ export default function AdminDashboard() {
     
     try {
       setLoading(true);
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId);
+      // Call Edge Function to delete from auth.users (cascades to public.users)
+      const { error } = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+      });
 
       if (error) throw error;
       // Optimistic local update — no refetch needed
       setUsers(prev => prev.filter(u => u.id !== userId));
     } catch (error) {
       console.error('Error deleting user:', error);
+      alert('Failed to delete user. Make sure the delete-user Edge Function is deployed.');
     } finally {
       setLoading(false);
     }

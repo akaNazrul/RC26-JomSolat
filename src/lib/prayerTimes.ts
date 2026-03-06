@@ -145,11 +145,11 @@ function getFallbackPrayerTimes(): PrayerTimeData {
 
 // Prayer order and names
 export const PRAYER_ORDER = [
-  { key: 'fajr', name: 'Fajr', nameAr: 'الفجر', label: 'Subuh' },
-  { key: 'dhuhr', name: 'Dhuhr', nameAr: 'الظهر', label: 'Zuhur' },
-  { key: 'asr', name: 'Asr', nameAr: 'العصر', label: 'Asar' },
-  { key: 'maghrib', name: 'Maghrib', nameAr: 'المغرب', label: 'Maghrib' },
-  { key: 'isha', name: 'Isha', nameAr: 'العشاء', label: 'Isya' },
+  { key: 'fajr', name: 'Fajr', nameAr: 'الفجر', nameTransliterated: 'Subuh', label: 'Subuh' },
+  { key: 'dhuhr', name: 'Dhuhr', nameAr: 'الظهر', nameTransliterated: 'Zuhur', label: 'Zuhur' },
+  { key: 'asr', name: 'Asr', nameAr: 'العصر', nameTransliterated: 'Asar', label: 'Asar' },
+  { key: 'maghrib', name: 'Maghrib', nameAr: 'المغرب', nameTransliterated: 'Maghrib', label: 'Maghrib' },
+  { key: 'isha', name: 'Isha', nameAr: 'العشاء', nameTransliterated: 'Isyak', label: 'Isya' },
 ] as const;
 
 export type PrayerKey = typeof PRAYER_ORDER[number]['key'];

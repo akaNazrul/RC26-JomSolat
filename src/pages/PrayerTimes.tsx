@@ -66,10 +66,20 @@ export default function PrayerTimesPage() {
 
       {/* Full width on both mobile and desktop, centered via Layout wrapper */}
       <div className="p-4 space-y-4 md:px-8">
-        {/* Zone Selector */}
-        <div className="flex items-center justify-center gap-2 p-3 rounded-xl bg-bg-surface border border-border-color">
-          <span className="font-body text-sm text-text-secondary">Zone:</span>
-          <span className="font-body font-semibold text-accent-primary">{getZoneDisplayName()}</span>
+        {/* Zone Selector - With Drone View Background */}
+        <div className="relative border border-border-color overflow-hidden rounded-xl h-40">
+          {/* Drone View Image Background */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: 'url(/assets/masjid-drone-view.png)' }}
+          />
+          {/* Low Blur Overlay */}
+          <div className="absolute inset-0 backdrop-blur-[2px] bg-bg-base/50" />
+          {/* Content - Centered in middle of photo */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+            <span className="font-body text-lg text-white font-bold">Zone:</span>
+            <span className="font-body text-xl md:text-2xl text-white font-bold">{getZoneDisplayName()}</span>
+          </div>
         </div>
 
         {/* Date */}
@@ -99,13 +109,13 @@ export default function PrayerTimesPage() {
                   {isActive && (
                     <div className="w-1 h-10 rounded-full bg-accent-warm" />
                   )}
-                  <div>
-                    <p className="font-arabic text-lg text-text-primary">{prayer.nameAr}</p>
-                    <p className="font-body text-sm text-text-secondary">{prayer.label}</p>
+<div>
+<p className="font-display text-xs md:text-sm text-text-primary">{prayer.nameTransliterated}</p>
+                    <p className="font-body text-xs text-text-secondary">{prayer.label}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`font-body text-lg font-semibold ${
+                  <span className={`font-body text-sm md:text-base font-semibold ${
                     isActive ? 'text-accent-warm' : 'text-text-primary'
                   }`}>
                     {time ? formatTime(time) : '--:--'}
@@ -116,20 +126,20 @@ export default function PrayerTimesPage() {
           })}
         </div>
 
-        {/* Sunrise */}
+{/* Sunrise */}
         <div className="flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color">
           <div>
-            <p className="font-body text-sm text-text-secondary">Sunrise</p>
-            <p className="font-arabic text-lg text-text-primary"> الشروق</p>
+            <p className="font-body text-xs text-text-secondary">Sunrise</p>
+            <p className="font-display text-sm md:text-base text-text-primary">Sunrise</p>
           </div>
-          <span className="font-body text-lg text-text-muted">
+          <span className="font-body text-sm md:text-base text-text-muted">
             {prayerTimes?.sunrise ? formatTime(prayerTimes.sunrise) : '--:--'}
           </span>
         </div>
 
         {/* Info */}
         <p className="text-center font-body text-xs text-text-muted">
-          Times are based on JAKIM method (Method 11) for Gelugor zone
+          Times are based on official JAKIM for Gelugor zone
         </p>
       </div>
     </div>

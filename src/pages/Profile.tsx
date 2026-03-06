@@ -149,9 +149,19 @@ export default function Profile() {
         <div className="p-4 rounded-xl bg-bg-surface border border-border-color text-center">
           <p className="font-body text-sm text-text-secondary">JomSolat v1.0.0</p>
           <p className="font-body text-xs text-text-muted mt-1">Built for RC26 · Team Murtabug</p>
-          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-primary/20">
+          <a
+            href="https://discord.gg/yNrgex98"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-primary/20 hover:bg-accent-primary/30 transition-colors cursor-pointer"
+          >
+            <img
+              src="/assets/kracked-dev-logo.svg"
+              alt="KrackedDevs"
+              className="w-4 h-4"
+            />
             <span className="text-xs font-body font-medium text-accent-primary">KrackedDevs RC26</span>
-          </div>
+          </a>
         </div>
       </div>
     </div>

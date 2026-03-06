@@ -110,7 +110,7 @@ export default function Home() {
                       : 'bg-bg-surface text-text-primary border border-border-color'
                   }`}
                 >
-                  <span className="font-arabic text-[10px] md:text-xs block mb-1">{prayer.nameAr}</span>
+<span className="font-display text-[10px] md:text-xs block mb-1">{prayer.nameTransliterated}</span>
                   <span className="font-body text-xs md:text-sm font-medium">
                     {prayerTimes ? formatTime(prayerTimes[prayer.key as keyof PrayerTimeData] as string) : '--:--'}
                   </span>
@@ -178,8 +178,13 @@ export default function Home() {
 
         {/* KrackedDevs Promo */}
         <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/20">
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/assets/kracked-dev-logo.svg" 
+              alt="Kracked Devs" 
+              className="w-10 h-10"
+            />
+            <div className="flex-1">
               <p className="font-body text-sm text-accent-primary font-semibold">Built for RC26</p>
               <p className="font-body text-xs text-text-secondary">Kracked Devs Ramadan Challenge 2026</p>
             </div>

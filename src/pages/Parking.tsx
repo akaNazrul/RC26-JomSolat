@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 
 export default function Parking() {
   const parkingZones = [
-    { type: 'car', icon: Car, color: 'bg-red-500', label: 'Car Parking', capacity: '~30 spaces', description: 'Main parking area adjacent to mosque' },
-    { type: 'motorcycle', icon: Bike, color: 'bg-blue-500', label: 'Motorcycle Parking', capacity: '~50 spaces', description: 'Covered parking near main entrance' },
+    { type: 'car', icon: Car, color: 'bg-red-500', label: 'Car Parking', capacity: '~100+ spaces', description: 'Main parking area adjacent to mosque' },
+    { type: 'motorcycle', icon: Bike, color: 'bg-blue-500', label: 'Motorcycle Parking', capacity: '~100+ spaces', description: 'Covered parking near main entrance' },
   ];
 
   const walkingRoutes = [
-    { from: 'Main Gate (Gerbang Utama)', time: '5 min' },
-    { from: 'DKG (Dewan Kuliah Gemilang)', time: '8 min' },
-    { from: 'Chancellery (Canselori)', time: '10 min' },
+    { from: 'Main Gate (Gerbang Utama)', time: '15 min' },
+    { from: 'Mosque Gate (Gerbang Masjid)', time: '5 min' },
+    { from: 'RST Gate (Gerbang RST)', time: '15 min' },
   ];
 
   return (
@@ -28,7 +28,7 @@ export default function Parking() {
         {/* Map */}
         <div className="h-64 rounded-2xl overflow-hidden bg-bg-surface border border-border-color">
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3971.974457576428!2d100.45616537462848!3d5.353072094587724!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304ac0f53a3d5a5b%3A0x33fdfa8c93c60ba1!2sMasjid%20Al-Malik%20Khalid%20(USM)!5e0!3m2!1sen!2smy!4v1706745600000!5m2!1sen!2smy"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3972.4134702551137!2d100.29939657438402!3d5.353702294625012!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x304ac165719f8797%3A0xd395a96db0a73e32!2sAl-Malik%20Khalid%20Mosque!5e0!3m2!1sen!2smy!4v1772789538774!5m2!1sen!2smy"
             width="100%"
             height="100%"
             style={{ border: 0 }}

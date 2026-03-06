@@ -6,7 +6,24 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key
 // The Database type is exported for use in explicit casts elsewhere.
 // Note: typed createClient<Database>() requires the exact Supabase-generated
 // schema format; use plain createClient() to avoid version-mismatch errors.
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storage: {
+      getItem: (key: string) => {
+        return localStorage.getItem(key);
+      },
+      setItem: (key: string, value: string) => {
+        localStorage.setItem(key, value);
+      },
+      removeItem: (key: string) => {
+        localStorage.removeItem(key);
+      },
+    },
+  },
+});
 
 // Types for Supabase responses
 export interface Database {

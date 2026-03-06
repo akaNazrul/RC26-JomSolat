@@ -10,6 +10,7 @@ build/
 .env.local
 .env.production.local
 .env.development.local
+.secrets.env
 
 # Vite cache
 .vite/

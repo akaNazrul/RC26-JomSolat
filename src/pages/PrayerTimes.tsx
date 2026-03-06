@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Bell, ChevronLeft } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { fetchPrayerTimes, PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
+import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function PrayerTimesPage() {
-  const { user, userZone } = useAppStore();
+  const { user, userZone, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,13 +22,16 @@ export default function PrayerTimesPage() {
 
   useEffect(() => {
     setLoading(true);
-    fetchPrayerTimes().then((times) => {
+    // Use the store cache — avoids redundant API calls when navigating between pages
+    fetchPrayerData().then((times) => {
       setPrayerTimes(times);
       const { current } = getCurrentPrayer(times);
       setCurrentPrayer(current);
       setLoading(false);
     });
-  }, [userZone, user?.zone]);
+    // Intentionally omit zone deps: fetchPrayerTimes is zone-agnostic (PNG01 fixed)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (
@@ -107,9 +110,6 @@ export default function PrayerTimesPage() {
                   }`}>
                     {time ? formatTime(time) : '--:--'}
                   </span>
-                  <button className="p-2 rounded-full hover:bg-bg-base">
-                    <Bell size={18} className="text-text-muted" />
-                  </button>
                 </div>
               </div>
             );

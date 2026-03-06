@@ -15,30 +15,27 @@ import Facilities from '@/pages/Facilities';
 import Parking from '@/pages/Parking';
 import Events from '@/pages/Events';
 import Profile from '@/pages/Profile';
+import AccountSettings from '@/pages/AccountSettings';
 import AdminDashboard from '@/pages/AdminDashboard';
 
 function App() {
-  const { theme, isAuthenticated, user, initSession, isLoading } = useAppStore();
+  const { isAuthenticated, initSession, isLoading } = useAppStore();
 
   useEffect(() => {
-    // Initialize session on mount only
+    // Initialize session + auth listener once on mount
     initSession();
   }, []);
-
-  useEffect(() => {
-    // Initialize theme on mount
-    document.documentElement.classList.remove('dark', 'light');
-    document.documentElement.classList.add(theme);
-  }, [theme]);
 
   // Show loading screen while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen bg-bg-base flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-xl bg-accent-primary flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-arabic text-2xl">م</span>
-          </div>
+          <img
+            src="/assets/v2-SVG.svg"
+            alt="JomSolat"
+            className="h-12 w-auto mx-auto mb-4"
+          />
           <p className="font-body text-text-secondary">Loading...</p>
         </div>
       </div>
@@ -47,16 +44,16 @@ function App() {
 
   return (
     <Routes>
-      {/* Public routes - redirect to home if already authenticated */}
+      {/* Public routes — redirect to home if already authenticated */}
       <Route path="/" element={isAuthenticated ? <Navigate to="/home" replace /> : <Landing />} />
       <Route path="/login" element={isAuthenticated ? <Navigate to="/home" replace /> : <Login />} />
       <Route path="/signup" element={isAuthenticated ? <Navigate to="/home" replace /> : <SignUp />} />
       <Route path="/forgot-password" element={isAuthenticated ? <Navigate to="/home" replace /> : <ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
-      
-      {/* Protected routes */}
-      <Route element={<Layout />}>
+
+      {/* Protected routes — redirect to landing if not authenticated */}
+      <Route element={isAuthenticated ? <Layout /> : <Navigate to="/" replace />}>
         <Route path="/home" element={<Home />} />
         <Route path="/prayer-times" element={<PrayerTimes />} />
         <Route path="/mosque-info" element={<MosqueInfo />} />
@@ -64,13 +61,11 @@ function App() {
         <Route path="/parking" element={<Parking />} />
         <Route path="/events" element={<Events />} />
         <Route path="/profile" element={<Profile />} />
-        
-        {/* Admin routes */}
-        {user?.role === 'admin' && (
-          <Route path="/admin" element={<AdminDashboard />} />
-        )}
+        <Route path="/account-settings" element={<AccountSettings />} />
+        {/* Admin dashboard: always registered; component handles its own access check */}
+        <Route path="/admin" element={<AdminDashboard />} />
       </Route>
-      
+
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

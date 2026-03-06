@@ -2,6 +2,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/useAppStore';
+import { buildUserObject } from '@/lib/user';
+import type { Session } from '@supabase/supabase-js';
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -65,7 +67,7 @@ export default function AuthCallback() {
       }
     };
 
-    const handleSession = async (session: any) => {
+    const handleSession = async (session: Session) => {
       try {
         // Check if user profile exists
         const { data: existingProfile, error: profileFetchError } = await supabase
@@ -106,18 +108,7 @@ export default function AuthCallback() {
         }
 
         // Set user in store
-        const user = {
-          id: session.user.id,
-          display_name: profile?.display_name || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          zone: (profile?.zone as 'gelugor' | 'usm' | 'manual') || 'gelugor',
-          role: (profile?.role as 'user' | 'admin') || 'user',
-          provider: session.user.app_metadata?.provider as 'email' | 'google' || 'email',
-          created_at: profile?.created_at || session.user.created_at,
-          last_seen_at: new Date().toISOString(),
-        };
-
-        setUser(user);
+        setUser(buildUserObject(session.user, profile));
 
         // Clear the URL hash to prevent re-processing on refresh
         window.history.replaceState(null, '', '/home');

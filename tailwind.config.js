@@ -42,7 +42,6 @@ export default {
         'shimmer': 'shimmer 1500ms linear infinite',
         'fade-in': 'fade-in 300ms ease-out',
         'slide-up': 'slide-up 320ms ease-out',
-        'donut': 'donut 1000ms linear',
       },
       keyframes: {
         'bounce-gentle': {
@@ -60,10 +59,6 @@ export default {
         'slide-up': {
           '0%': { opacity: '0', transform: 'translateY(20px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        'donut': {
-          '0%': { strokeDashoffset: '0' },
-          '100%': { strokeDashoffset: '339.3' },
         },
       },
     },

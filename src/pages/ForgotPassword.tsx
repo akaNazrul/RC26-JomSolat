@@ -45,10 +45,11 @@ export default function ForgotPassword() {
     <div className="min-h-screen bg-bg-base flex flex-col">
       <header className="p-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-            <span className="text-white font-arabic text-lg">م</span>
-          </div>
-          <span className="font-display text-xl text-text-primary">JomSolat</span>
+          <img
+            src="/assets/v2-SVG.svg"
+            alt="JomSolat"
+            className="h-10 w-auto"
+          />
         </Link>
       </header>
 
@@ -88,10 +89,11 @@ export default function ForgotPassword() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block font-body text-sm text-text-secondary mb-2">Email</label>
+                  <label htmlFor="forgot-email" className="block font-body text-sm text-text-secondary mb-2">Email</label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                     <input
+                      id="forgot-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

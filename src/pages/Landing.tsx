@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, CalendarDays, MapPin, ChevronDown, Moon, Sun } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { fetchPrayerTimes, PRAYER_ORDER, formatTime, type PrayerTimeData } from '@/lib/prayerTimes';
+import { PRAYER_ORDER, formatTime, type PrayerTimeData } from '@/lib/prayerTimes';
 
 export default function Landing() {
-  const { theme, toggleTheme } = useAppStore();
+  const { theme, toggleTheme, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
 
   useEffect(() => {
-    // Fetch prayer times on mount
-    fetchPrayerTimes().then(setPrayerTimes);
+    // Use cached prayer data from store
+    fetchPrayerData().then(setPrayerTimes);
   }, []);
 
   const scrollToSection = (id: string) => {
@@ -35,10 +35,11 @@ export default function Landing() {
         {/* Header */}
         <header className="relative z-20 flex items-center justify-between px-4 py-4 pt-12">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-              <span className="text-white font-arabic text-lg">م</span>
-            </div>
-            <span className="font-display text-xl text-text-primary">JomSolat</span>
+            <img
+              src="/assets/v2-SVG.svg"
+              alt="JomSolat"
+              className="h-10 w-auto"
+            />
           </div>
           <div className="flex items-center gap-2">
             <button

@@ -3,32 +3,52 @@ import { Link } from 'react-router-dom';
 import { Building2, Waves, Car, Calendar, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import DonutTimer from '@/components/DonutTimer';
-import { fetchPrayerTimes, PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
+import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
+import { supabase } from '@/lib/supabase';
+
+interface UpcomingEvent {
+  id: string;
+  title: string;
+  event_date: string;
+  type: string;
+}
 
 export default function Home() {
-  const { user } = useAppStore();
+  const { user, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string>('fajr');
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
 
   useEffect(() => {
-    fetchPrayerTimes().then((times) => {
+    // Use cached prayer data — avoids a redundant API call if already fetched today
+    fetchPrayerData().then((times) => {
       setPrayerTimes(times);
       const { current } = getCurrentPrayer(times);
       if (current) setCurrentPrayer(current);
     });
+
+    // Fetch the next 2 upcoming events from Supabase
+    supabase
+      .from('events')
+      .select('id, title, event_date, type')
+      .eq('is_active', true)
+      .gte('event_date', new Date().toISOString().split('T')[0])
+      .order('event_date', { ascending: true })
+      .limit(2)
+      .then(({ data }) => {
+        if (data) setUpcomingEvents(data);
+      });
   }, []);
+
+  // Immediately available from JS — no API needed
+  const today = new Date();
+  const todayLabel = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
 
   const quickAccessCards = [
     { to: '/mosque-info', icon: Building2, label: 'Mosque Info', color: 'bg-accent-primary/20 text-accent-primary' },
     { to: '/facilities', icon: Waves, label: 'Facilities', color: 'bg-blue-500/20 text-blue-500' },
     { to: '/parking', icon: Car, label: 'Parking', color: 'bg-green-500/20 text-green-500' },
     { to: '/events', icon: Calendar, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
-  ];
-
-  {/* should retrieve the data from social media pusat islam media for their latest info*/}
-  const upcomingEvents = [
-    { title: 'Taraweeh Prayer', date: 'Every night in Ramadan', type: 'taraweeh' },
-    { title: 'Friday khutbah', date: "Jumu'ah 1:30 PM", type: 'ceramah' },
   ];
 
   return (
@@ -39,9 +59,9 @@ export default function Home() {
           <div className="flex items-center gap-2">
             {/* mobile view of logo */}
             <img
-              src="/assets/jomSolat-logo-noBg.svg"
+              src="/assets/v2-SVG.svg"
               alt="JomSolat"
-              className="h-16 w-auto"
+              className="h-10 w-auto"
             />
           </div>
         </div>
@@ -54,9 +74,12 @@ export default function Home() {
           <h1 className="font-display text-2xl md:text-3xl text-text-primary">
             Assalamualaikum, {user?.display_name || 'Guest'}
           </h1>
+          {/* Show today's Gregorian date immediately; add Hijri once API resolves */}
           <p className="font-body text-sm text-text-secondary">
-            {prayerTimes?.hijri.day} {prayerTimes?.hijri.month} {prayerTimes?.hijri.year}H ·{' '}
-            {prayerTimes?.gregorian.day}/{prayerTimes?.gregorian.month}/{prayerTimes?.gregorian.year}
+            {prayerTimes
+              ? `${prayerTimes.hijri.day} ${prayerTimes.hijri.month} ${prayerTimes.hijri.year}H · `
+              : ''}
+            {todayLabel}
           </p>
         </div>
 
@@ -119,31 +142,37 @@ export default function Home() {
         {/* Events Teaser */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg text-text-primary">Upcoming Events</h2>
+            <h2 className="font-display text-lg text-text-primary">Events</h2>
             <Link to="/events" className="text-sm text-accent-primary flex items-center gap-1">
               See All <ChevronRight size={16} />
             </Link>
           </div>
           <div className="space-y-2">
-            {upcomingEvents.map((event, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${
-                    event.type === 'taraweeh' ? 'bg-purple-500/20 text-purple-500' : 'bg-accent-warm/20 text-accent-warm'
-                  }`}>
-                    <Calendar size={18} />
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${
+                      event.type === 'taraweeh' ? 'bg-purple-500/20 text-purple-500' : 'bg-accent-warm/20 text-accent-warm'
+                    }`}>
+                      <Calendar size={18} />
+                    </div>
+                    <div>
+                      <p className="font-body font-medium text-text-primary">{event.title}</p>
+                      <p className="font-body text-xs text-text-secondary">
+                        {new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-body font-medium text-text-primary">{event.title}</p>
-                    <p className="font-body text-xs text-text-secondary">{event.date}</p>
-                  </div>
+                  <ChevronRight size={18} className="text-text-muted" />
                 </div>
-                <ChevronRight size={18} className="text-text-muted" />
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="font-body text-sm text-text-muted text-center py-4">No upcoming events</p>
+            )}
           </div>
         </div>
 

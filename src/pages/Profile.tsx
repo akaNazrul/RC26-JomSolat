@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Moon, Bell, Shield, LogOut, Trash2, ChevronRight, Settings } from 'lucide-react';
+import { Moon, Bell, Shield, LogOut, ChevronRight, Settings } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
 
@@ -31,15 +31,13 @@ export default function Profile() {
   };
 
   const settingsSections = [
-    { icon: Settings, label: 'Account Settings', onClick: () => {} },
+    { icon: Settings, label: 'Account Settings', onClick: () => navigate('/account-settings') },
     { icon: Bell, label: 'Notifications', type: 'toggle', value: notifications, onChange: setNotifications },
     { icon: Moon, label: 'Dark Mode', type: 'toggle', value: theme === 'dark', onChange: () => toggleTheme() },
-    { icon: Shield, label: 'Privacy & Security', onClick: () => {} },
   ];
 
   const accountActions = [
     { icon: LogOut, label: 'Sign Out', onClick: handleLogout, color: 'text-red-500' },
-    { icon: Trash2, label: 'Delete Account', onClick: () => {}, color: 'text-red-500' },
   ];
 
   return (
@@ -56,11 +54,19 @@ export default function Profile() {
       <div className="p-4 space-y-6">
         {/* User Info */}
         <div className="flex items-center gap-4 p-4 rounded-2xl bg-bg-surface border border-border-color">
-          <div className="w-16 h-16 rounded-full bg-accent-primary flex items-center justify-center">
-            <span className="text-2xl font-body font-bold text-white">
-              {user?.display_name?.charAt(0).toUpperCase() || 'G'}
-            </span>
-          </div>
+          {user?.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt="Profile"
+              className="w-16 h-16 rounded-full object-cover border-2 border-accent-primary"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-accent-primary flex items-center justify-center">
+              <span className="text-2xl font-body font-bold text-white">
+                {user?.display_name?.charAt(0).toUpperCase() || 'G'}
+              </span>
+            </div>
+          )}
           <div>
             <h2 className="font-body font-semibold text-text-primary">
               {user?.display_name || 'Guest'}

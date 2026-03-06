@@ -107,10 +107,11 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-bg-base flex flex-col">
       <header className="p-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-            <span className="text-white font-arabic text-lg">م</span>
-          </div>
-          <span className="font-display text-xl text-text-primary">JomSolat</span>
+          <img
+            src="/assets/v2-SVG.svg"
+            alt="JomSolat"
+            className="h-10 w-auto"
+          />
         </Link>
       </header>
 
@@ -158,14 +159,16 @@ export default function ResetPassword() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block font-body text-sm text-text-secondary mb-2">New Password</label>
+                  <label htmlFor="new-password" className="block font-body text-sm text-text-secondary mb-2">New Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                     <input
+                      id="new-password"
                       type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
+                      autoComplete="new-password"
                       className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                     />
                     <button
@@ -179,14 +182,16 @@ export default function ResetPassword() {
                 </div>
 
                 <div>
-                  <label className="block font-body text-sm text-text-secondary mb-2">Confirm New Password</label>
+                  <label htmlFor="confirm-password" className="block font-body text-sm text-text-secondary mb-2">Confirm New Password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                     <input
+                      id="confirm-password"
                       type={showPassword ? 'text' : 'password'}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="••••••••"
+                      autoComplete="new-password"
                       className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                     />
                   </div>

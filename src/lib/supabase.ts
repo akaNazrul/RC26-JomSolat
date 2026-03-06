@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
+// The Database type is exported for use in explicit casts elsewhere.
+// Note: typed createClient<Database>() requires the exact Supabase-generated
+// schema format; use plain createClient() to avoid version-mismatch errors.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Types for Supabase responses
@@ -14,6 +17,7 @@ export interface Database {
           id: string;
           display_name: string;
           email: string;
+          avatar_url: string | null;
           zone: string;
           role: string;
           provider: string;
@@ -24,13 +28,16 @@ export interface Database {
           id: string;
           display_name: string;
           email: string;
+          avatar_url?: string | null;
           zone?: string;
           role?: string;
           provider: string;
         };
         Update: {
           display_name?: string;
+          avatar_url?: string | null;
           zone?: string;
+          role?: string;
           last_seen_at?: string;
         };
       };
@@ -57,7 +64,8 @@ export interface Database {
           location?: string | null;
           description?: string | null;
           image_url?: string | null;
-          created_by: string;
+          is_active?: boolean;
+          created_by?: string;
         };
         Update: {
           title?: string;
@@ -68,6 +76,7 @@ export interface Database {
           description?: string | null;
           image_url?: string | null;
           is_active?: boolean;
+          updated_at?: string;
         };
       };
       mosque_info: {

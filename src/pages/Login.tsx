@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
+import { buildUserObject } from '@/lib/user';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -63,18 +64,7 @@ export default function Login() {
           console.error('Error fetching profile:', profileError);
         }
 
-        const user = {
-          id: data.user.id,
-          display_name: profile?.display_name || data.user.email?.split('@')[0] || 'User',
-          email: data.user.email || '',
-          zone: (profile?.zone as 'gelugor' | 'usm' | 'manual') || 'gelugor',
-          role: (profile?.role as 'user' | 'admin') || 'user',
-          provider: data.user.app_metadata?.provider as 'email' | 'google' || 'email',
-          created_at: profile?.created_at || data.user.created_at,
-          last_seen_at: new Date().toISOString(),
-        };
-
-        setUser(user);
+        setUser(buildUserObject(data.user, profile));
         navigate('/home');
       }
     } catch (err) {
@@ -110,10 +100,11 @@ export default function Login() {
       {/* Header */}
       <header className="p-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-            <span className="text-white font-arabic text-lg">م</span>
-          </div>
-          <span className="font-display text-xl text-text-primary">JomSolat</span>
+          <img
+            src="/assets/v2-SVG.svg"
+            alt="JomSolat"
+            className="h-10 w-auto"
+          />
         </Link>
       </header>
 
@@ -132,14 +123,16 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Email</label>
+              <label htmlFor="login-email" className="block font-body text-sm text-text-secondary mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="login-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -148,7 +141,7 @@ export default function Login() {
             {/* Password */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="font-body text-sm text-text-secondary">Password</label>
+                <label htmlFor="login-password" className="font-body text-sm text-text-secondary">Password</label>
                 <Link to="/forgot-password" className="font-body text-sm text-accent-primary">
                   Forgot Password?
                 </Link>
@@ -156,10 +149,12 @@ export default function Login() {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                  autoComplete="current-password"
                   className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
                 <button

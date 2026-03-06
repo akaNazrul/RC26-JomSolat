@@ -1,7 +1,10 @@
+import type React from 'react';
+
 export interface User {
   id: string;
   display_name: string;
   email: string;
+  avatar_url: string | null;
   zone: 'gelugor' | 'usm' | 'manual';
   role: 'user' | 'admin';
   provider: 'email' | 'google';
@@ -58,7 +61,8 @@ export type Theme = 'dark' | 'light';
 
 export interface Facility {
   id: string;
-  icon: string;
+  // Lucide icon component (e.g. Waves, Car) — not a string
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   title: string;
   titleAr: string;
   status: 'available' | 'limited' | 'closed' | 'info';

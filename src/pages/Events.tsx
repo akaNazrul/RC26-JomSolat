@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, Calendar, Clock, MapPin, CalendarPlus, Loader2 } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, MapPin, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 
@@ -20,13 +20,16 @@ export default function Events() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchEvents();
+    // AbortController prevents stale results when the user rapidly changes filters
+    const controller = new AbortController();
+    fetchEvents(controller.signal);
+    return () => controller.abort();
   }, [activeFilter, showUpcoming]);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (signal?: AbortSignal) => {
     try {
       setLoading(true);
-      
+
       let query = supabase
         .from('events')
         .select('*')
@@ -44,6 +47,8 @@ export default function Events() {
         .order('event_date', { ascending: true })
         .order('event_time', { ascending: true });
 
+      // Ignore results if the effect was cleaned up (filters changed mid-flight)
+      if (signal?.aborted) return;
       if (error) throw error;
 
       const formattedEvents: EventData[] = (data || []).map(event => ({
@@ -58,9 +63,10 @@ export default function Events() {
 
       setEvents(formattedEvents);
     } catch (error) {
+      if (signal?.aborted) return; // suppressed — intentional abort
       console.error('Error fetching events:', error);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
@@ -141,9 +147,6 @@ export default function Events() {
                   <span className={`text-xs px-2 py-1 rounded-full ${getTypeColor(event.type)}`}>
                     {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
                   </span>
-                  <button className="p-2 rounded-full hover:bg-bg-base">
-                    <CalendarPlus size={18} className="text-text-muted" />
-                  </button>
                 </div>
                 <h3 className="font-body font-semibold text-text-primary mb-2">{event.title}</h3>
                 <div className="space-y-1 mb-3">

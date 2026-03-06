@@ -1,31 +1,39 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '@/lib/supabase';
+import { fetchPrayerTimes } from '@/lib/prayerTimes';
+import { buildUserObject } from '@/lib/user';
 import type { User, Theme } from '@/types';
+import type { PrayerTimeData } from '@/lib/prayerTimes';
 
 interface AppState {
   // Theme
   theme: Theme;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
-  
+
   // User
   user: User | null;
   setUser: (user: User | null) => void;
-  
+
   // Loading states
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
-  
+
   // Session
   isAuthenticated: boolean;
   setIsAuthenticated: (authenticated: boolean) => void;
-  
+
   // Zone
   userZone: 'gelugor' | 'usm' | 'manual';
   setUserZone: (zone: 'gelugor' | 'usm' | 'manual') => void;
-  
-  // Initialize session from Supabase
+
+  // Prayer times cache (persisted for same-day reuse)
+  prayerTimeData: PrayerTimeData | null;
+  prayerTimeFetchedDate: string | null;
+  fetchPrayerData: () => Promise<PrayerTimeData>;
+
+  // Initialize session from Supabase + subscribe to auth state changes
   initSession: () => Promise<void>;
 }
 
@@ -45,51 +53,55 @@ export const useAppStore = create<AppState>()(
         document.documentElement.classList.remove('dark', 'light');
         document.documentElement.classList.add(newTheme);
       },
-      
+
       // User
       user: null,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      
+
       // Loading
       isLoading: true,
       setIsLoading: (isLoading) => set({ isLoading }),
-      
+
       // Auth
       isAuthenticated: false,
       setIsAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
-      
+
       // Zone
       userZone: 'gelugor',
       setUserZone: (userZone) => set({ userZone }),
-      
-      // Initialize session
+
+      // Prayer times cache
+      prayerTimeData: null,
+      prayerTimeFetchedDate: null,
+      fetchPrayerData: async () => {
+        const { prayerTimeData, prayerTimeFetchedDate } = get();
+        const today = new Date().toDateString();
+        if (prayerTimeData && prayerTimeFetchedDate === today) {
+          return prayerTimeData;
+        }
+        const data = await fetchPrayerTimes();
+        set({ prayerTimeData: data, prayerTimeFetchedDate: today });
+        return data;
+      },
+
+      // Initialize session + subscribe to auth state changes
       initSession: async () => {
+        set({ isLoading: true });
+
+        // One-time initial session check
         try {
-          set({ isLoading: true });
-          
-          // Check for existing session
           const { data: { session } } = await supabase.auth.getSession();
-          
           if (session?.user) {
-            // Fetch user profile from public.users table
             const { data: profile } = await supabase
               .from('users')
               .select('*')
               .eq('id', session.user.id)
               .single();
-            
-            const user: User = {
-              id: session.user.id,
-              display_name: profile?.display_name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-              zone: (profile?.zone as 'gelugor' | 'usm' | 'manual') || 'gelugor',
-              role: (profile?.role as 'user' | 'admin') || 'user',
-              provider: session.user.app_metadata?.provider as 'email' | 'google' || 'email',
-              created_at: profile?.created_at || session.user.created_at,
-              last_seen_at: new Date().toISOString(),
-            };
-            
-            set({ user, isAuthenticated: true, isLoading: false });
+            set({
+              user: buildUserObject(session.user, profile),
+              isAuthenticated: true,
+              isLoading: false,
+            });
           } else {
             set({ isAuthenticated: false, user: null, isLoading: false });
           }
@@ -97,6 +109,30 @@ export const useAppStore = create<AppState>()(
           console.error('Error initializing session:', error);
           set({ isAuthenticated: false, user: null, isLoading: false });
         }
+
+        // Persistent subscription — keeps store in sync for the lifetime of the page.
+        // Handles token refresh, logout from another tab, OAuth sign-in, etc.
+        supabase.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'SIGNED_OUT' || !session) {
+            set({ user: null, isAuthenticated: false });
+            return;
+          }
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            try {
+              const { data: profile } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              set({
+                user: buildUserObject(session.user, profile),
+                isAuthenticated: true,
+              });
+            } catch {
+              // Non-fatal — token is valid even if profile fetch fails
+            }
+          }
+        });
       },
     }),
     {
@@ -104,6 +140,8 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         theme: state.theme,
         userZone: state.userZone,
+        prayerTimeData: state.prayerTimeData,
+        prayerTimeFetchedDate: state.prayerTimeFetchedDate,
       }),
     }
   )

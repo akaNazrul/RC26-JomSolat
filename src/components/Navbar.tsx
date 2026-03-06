@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Clock, Calendar, User, Building2, Bell, Sun, Moon } from 'lucide-react';
+import { Home, Clock, Calendar, User, Building2, Sun, Moon } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 const navItems = [
@@ -57,7 +57,7 @@ function DesktopNav() {
         {/* Left: Logo (outside the rounded rectangle) */}
         <div className="flex-shrink-0">
           <img
-            src="/assets/jomSolat-logo-noBg.svg"
+            src="/assets/v2-SVG.svg"
             alt="JomSolat Logo"
             className="h-20 w-auto"
           />
@@ -89,13 +89,8 @@ function DesktopNav() {
           </div>
         </div>
         
-        {/* Right: Theme Toggle & Notification (outside the rounded rectangle) */}
+        {/* Right: Theme Toggle */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Notification Bell */}
-          <button className="p-2 rounded-xl text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors">
-            <Bell size={20} strokeWidth={2} />
-          </button>
-          
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}

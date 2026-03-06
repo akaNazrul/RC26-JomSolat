@@ -39,9 +39,11 @@ const HIJRI_MONTHS_AR: Record<number, string> = {
 };
 
 function unixToTimeString(unix: number): string {
-  const date = new Date(unix * 1000);
-  const hours = date.getHours().toString().padStart(2, '0');
-  const minutes = date.getMinutes().toString().padStart(2, '0');
+  // Shift to Malaysia Time (UTC+8) explicitly so the result is correct
+  // regardless of which timezone the device is running in.
+  const myt = new Date(unix * 1000 + 8 * 60 * 60 * 1000);
+  const hours = myt.getUTCHours().toString().padStart(2, '0');
+  const minutes = myt.getUTCMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
 }
 
@@ -209,7 +211,9 @@ export function getCurrentPrayer(times: PrayerTimeData): { current: PrayerKey | 
   }
   
   // If all prayers have passed, next is fajr of next day (default)
-  if (!current && currentTime < parseInt(times.fajr.split(':')[0]) * 60) {
+  // Fix: use both hours AND minutes so e.g. 05:50 → 350, not just 300
+  const [fh, fm] = times.fajr.split(':').map(Number);
+  if (!current && currentTime < fh * 60 + fm) {
     next = 'fajr';
   }
   

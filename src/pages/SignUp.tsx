@@ -61,6 +61,7 @@ export default function SignUp() {
           id: data.user.id,
           display_name: name,
           email: email,
+          avatar_url: null,
           zone: FIXED_ZONE,
           role: 'user' as const,
           provider: 'email' as const,
@@ -109,10 +110,11 @@ export default function SignUp() {
       {/* Header */}
       <header className="p-4">
         <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-accent-primary flex items-center justify-center">
-            <span className="text-white font-arabic text-lg">م</span>
-          </div>
-          <span className="font-display text-xl text-text-primary">JomSolat</span>
+          <img
+            src="/assets/v2-SVG.svg"
+            alt="JomSolat"
+            className="h-10 w-auto"
+          />
         </Link>
       </header>
 
@@ -131,14 +133,16 @@ export default function SignUp() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Full Name</label>
+              <label htmlFor="signup-name" className="block font-body text-sm text-text-secondary mb-2">Full Name</label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="signup-name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
+                  autoComplete="name"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -146,14 +150,16 @@ export default function SignUp() {
 
             {/* Email */}
             <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Email</label>
+              <label htmlFor="signup-email" className="block font-body text-sm text-text-secondary mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="signup-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -161,14 +167,16 @@ export default function SignUp() {
 
             {/* Password */}
             <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Password</label>
+              <label htmlFor="signup-password" className="block font-body text-sm text-text-secondary mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="signup-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
                 <button
@@ -183,14 +191,16 @@ export default function SignUp() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block font-body text-sm text-text-secondary mb-2">Confirm Password</label>
+              <label htmlFor="signup-confirm" className="block font-body text-sm text-text-secondary mb-2">Confirm Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
+                  id="signup-confirm"
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>

@@ -6,28 +6,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/useAppStore';
-
-interface Event {
-  id: string;
-  title: string;
-  type: string;
-  event_date: string;
-  event_time: string | null;
-  location: string | null;
-  description: string | null;
-  is_active: boolean;
-  created_at: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  display_name: string;
-  role: string;
-  provider: string;
-  created_at: string;
-  zone: string;
-}
+import type { Event, User } from '@/types';
 
 export default function AdminDashboard() {
   const { user } = useAppStore();
@@ -99,7 +78,7 @@ export default function AdminDashboard() {
       
       const eventData = {
         title: eventForm.title,
-        type: eventForm.type,
+        type: eventForm.type as Event['type'],
         event_date: eventForm.event_date,
         event_time: eventForm.event_time || null,
         location: eventForm.location || null,
@@ -147,7 +126,8 @@ export default function AdminDashboard() {
         .eq('id', id);
 
       if (error) throw error;
-      fetchEvents();
+      // Optimistic local update — no refetch needed
+      setEvents(prev => prev.filter(e => e.id !== id));
     } catch (error) {
       console.error('Error deleting event:', error);
     } finally {
@@ -163,7 +143,8 @@ export default function AdminDashboard() {
         .eq('id', event.id);
 
       if (error) throw error;
-      fetchEvents();
+      // Optimistic local update — no refetch needed
+      setEvents(prev => prev.map(e => e.id === event.id ? { ...e, is_active: !event.is_active } : e));
     } catch (error) {
       console.error('Error toggling event:', error);
     }
@@ -178,7 +159,8 @@ export default function AdminDashboard() {
         .eq('id', userId);
 
       if (error) throw error;
-      fetchUsers();
+      // Optimistic local update — no refetch needed
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole as User['role'] } : u));
     } catch (error) {
       console.error('Error updating user role:', error);
     } finally {
@@ -197,7 +179,8 @@ export default function AdminDashboard() {
         .eq('id', userId);
 
       if (error) throw error;
-      fetchUsers();
+      // Optimistic local update — no refetch needed
+      setUsers(prev => prev.filter(u => u.id !== userId));
     } catch (error) {
       console.error('Error deleting user:', error);
     } finally {
@@ -386,16 +369,6 @@ export default function AdminDashboard() {
             )}
           </div>
         )}
-
-        {/* RC26 Verification Note */}
-        <div className="p-4 rounded-xl bg-accent-primary/10 border border-accent-primary/20">
-          <p className="font-body text-sm text-accent-primary">
-            <strong>RC26 Admin Access:</strong> Provide these credentials to Kracked Devs for verification.
-          </p>
-          <p className="font-body text-xs text-text-muted mt-1">
-            Email: admin@jomsolat.app
-          </p>
-        </div>
       </div>
 
       {/* Event Modal */}

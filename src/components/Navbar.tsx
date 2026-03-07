@@ -1,17 +1,18 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Clock, MapPin, Calendar, User, Building2 } from 'lucide-react';
+import { Home, Clock, Building2, Calendar, User, Rss } from 'lucide-react'; // Added Rss
 
 const navItems = [
   { to: '/home', icon: Home, label: 'Home' },
   { to: '/prayer-times', icon: Clock, label: 'Prayers' },
   { to: '/mosque-info', icon: Building2, label: 'Mosque' },
+  { to: '/feed', icon: Rss, label: 'Feed' }, // New Feed Item
   { to: '/events', icon: Calendar, label: 'Events' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 
 export default function Navbar() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-bg-elevated border-t border-border-color safe-area-bottom z-50">
+    <nav className="fixed bottom-0 left-0 right-0 bg-bg-elevated border-t border-border-color safe-area-bottom z-50 transition-colors duration-300">
       <div className="flex justify-around items-center h-16 max-w-md mx-auto">
         {navItems.map(({ to, icon: Icon, label }) => (
           <NavLink
@@ -28,12 +29,12 @@ export default function Navbar() {
             {({ isActive }) => (
               <>
                 <div className="relative">
-                  <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                   {isActive && (
                     <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent-warm" />
                   )}
                 </div>
-                <span className="text-[11px] mt-1">{label}</span>
+                <span className="text-[10px] mt-1 font-medium">{label}</span>
               </>
             )}
           </NavLink>
@@ -42,4 +43,3 @@ export default function Navbar() {
     </nav>
   );
 }
-

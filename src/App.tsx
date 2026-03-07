@@ -14,6 +14,7 @@ import Parking from '@/pages/Parking';
 import Events from '@/pages/Events';
 import Profile from '@/pages/Profile';
 import AdminDashboard from '@/pages/AdminDashboard';
+import Feedpage from './pages/Feedpage';
 
 function App() {
   const { theme, isAuthenticated, user, initSession } = useAppStore();
@@ -77,6 +78,7 @@ function App() {
         <Route path="/parking" element={<Parking />} />
         <Route path="/events" element={<Events />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/feed" element={<Feedpage />} />
         
         {/* Admin routes */}
         {user?.role === 'admin' && (

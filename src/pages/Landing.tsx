@@ -83,6 +83,14 @@ export default function Landing() {
             >
               Get Started — It's Free
             </Link>
+
+            <Link
+              to="/feed"
+              className="flex-1 py-4 px-6 rounded-full bg-accent-primary text-white font-body font-semibold text-center hover:opacity-90 transition-opacity"
+            >
+              View Mosque Feed
+            </Link>
+
             <button
               onClick={() => scrollToSection('features')}
               className="flex-1 py-4 px-6 rounded-full border border-text-secondary/30 text-text-primary font-body font-medium text-center hover:bg-bg-surface/50 transition-colors"

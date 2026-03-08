@@ -6,7 +6,6 @@ const navItems = [
   { to: '/prayer-times', icon: Clock, label: 'Prayers' },
   { to: '/mosque-info', icon: Building2, label: 'Mosque' },
   { to: '/feed', icon: Rss, label: 'Feed' }, // New Feed Item
-  { to: '/events', icon: Calendar, label: 'Events' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];
 

@@ -54,14 +54,48 @@ export default function Login() {
 
       if (data.user) {
         // Fetch user profile from public.users table
-        const { data: profile, error: profileError } = await supabase
+        let profile = null;
+        const { data: existingProfile, error: profileError } = await supabase
           .from('users')
           .select('*')
           .eq('id', data.user.id)
           .single();
 
-        if (profileError) {
+        if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error fetching profile:', profileError);
+        }
+
+        // If profile doesn't exist, create it
+        if (!existingProfile) {
+          console.log('Profile not found during login, creating new profile...');
+          try {
+            const { data: newProfile, error: createProfileError } = await supabase
+              .from('users')
+              .insert({
+                id: data.user.id,
+                display_name: data.user.user_metadata?.display_name || 
+                              data.user.user_metadata?.full_name || 
+                              data.user.email?.split('@')[0] || 
+                              'User',
+                email: data.user.email || '',
+                zone: data.user.user_metadata?.zone || 'gelugor',
+                role: 'user',
+                provider: data.user.app_metadata?.provider || 'email',
+              })
+              .select()
+              .single();
+
+            if (createProfileError) {
+              console.error('Error creating profile on login:', createProfileError);
+            } else {
+              profile = newProfile;
+              console.log('Profile created successfully on login:', profile);
+            }
+          } catch (err) {
+            console.error('Unexpected error during profile creation on login:', err);
+          }
+        } else {
+          profile = existingProfile;
         }
 
         setUser(buildUserObject(data.user, profile));

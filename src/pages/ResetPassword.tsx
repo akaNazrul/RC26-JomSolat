@@ -19,36 +19,60 @@ export default function ResetPassword() {
       try {
         const searchParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const type = searchParams.get('type') || hashParams.get('type');
 
-        if (searchParams.has('code')) {
-          // PKCE flow — exchange code for session
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(
-            window.location.href
-          );
-          if (exchangeError) {
+        // Debug: log what we found
+        console.log('Reset link detection:', {
+          hasCode: searchParams.has('code'),
+          hasAccessToken: hashParams.has('access_token'),
+          type,
+          fullHref: window.location.href,
+        });
+
+        // Check for password recovery token (PKCE flow with code or legacy flow with token)
+        if (type === 'recovery') {
+          if (searchParams.has('code')) {
+            // PKCE flow: exchange code for session
+            console.log('Using PKCE flow for password recovery...');
+            const { error: exchangeError, data } = await supabase.auth.exchangeCodeForSession(
+              window.location.href
+            );
+            if (exchangeError) {
+              console.error('Code exchange failed:', exchangeError);
+              setError('Invalid or expired reset link. Please request a new one.');
+              setIsVerifying(false);
+              return;
+            }
+            console.log('Code exchange successful:', data);
+          } else if (hashParams.has('access_token')) {
+            // Legacy implicit flow: token is already in URL, Supabase handles it automatically
+            console.log('Using legacy flow for password recovery...');
+            // Wait a moment for Supabase to auto-detect the session from URL
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+
+          // Verify we have an active session
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !sessionData?.session) {
+            console.error('No session after recovery token exchange:', sessionError);
             setError('Invalid or expired reset link. Please request a new one.');
             setIsVerifying(false);
             return;
           }
-        } else if (hashParams.has('access_token') && hashParams.get('type') === 'recovery') {
-          // Legacy implicit flow — Supabase processes this automatically
-          const { error: sessionError } = await supabase.auth.getSession();
-          if (sessionError) {
-            setError('Invalid or expired reset link. Please request a new one.');
-            setIsVerifying(false);
-            return;
-          }
+
+          console.log('Session established for password reset');
+          setIsVerifying(false);
         } else {
           // No valid reset token in URL
+          console.error('No recovery type found in URL');
           setError('Invalid reset link. Please request a new password reset.');
           setIsVerifying(false);
           return;
         }
-
-        setIsVerifying(false);
       } catch (err) {
         console.error('Reset password init error:', err);
-        setError('Something went wrong. Please try again.');
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || 'Something went wrong. Please try again.');
         setIsVerifying(false);
       }
     };
@@ -81,11 +105,15 @@ export default function ResetPassword() {
       }
 
       // Sign out so the user logs in fresh with the new password
-      await supabase.auth.signOut();
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) {
+        console.error('Sign out after password update failed:', signOutError);
+      }
       setDone(true);
     } catch (err) {
-      setError('Something went wrong. Please try again.');
       console.error('Update password error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }

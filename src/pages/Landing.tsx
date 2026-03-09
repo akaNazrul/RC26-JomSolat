@@ -217,10 +217,10 @@ export default function Landing() {
                     className="flex items-center justify-between py-3 border-b border-border-color last:border-0"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="font-arabic text-lg text-text-secondary">{prayer.nameAr}</span>
-                      <span className="font-body font-medium text-text-primary">{prayer.label}</span>
+                      <span className="font-arabic text-xl md:text-2xl text-text-secondary">{prayer.nameAr}</span>
+                      <span className="font-body font-medium text-lg md:text-xl text-text-primary">{prayer.label}</span>
                     </div>
-                    <span className="font-body text-text-primary">
+                    <span className="font-body text-lg md:text-xl text-text-primary">
                       {prayerTime ? formatTime(prayerTime) : '--:--'}
                     </span>
                   </div>

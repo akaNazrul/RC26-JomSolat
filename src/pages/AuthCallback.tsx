@@ -76,35 +76,49 @@ export default function AuthCallback() {
           .eq('id', session.user.id)
           .single();
 
+        let profile = existingProfile;
+
         if (profileFetchError && profileFetchError.code !== 'PGRST116') {
           // PGRST116 = "Could not find a row" - this is expected for new users
           console.error('Error fetching profile:', profileFetchError);
         }
 
-        let profile = existingProfile;
-
         if (!existingProfile) {
-          // The DB trigger should have already created the row on first auth,
-          // but upsert here as a safety net.
-          const { data: newProfile, error: profileError } = await supabase
-            .from('users')
-            .upsert({
-              id: session.user.id,
-              display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-              email: session.user.email || '',
-              zone: 'gelugor',
-              role: 'user',
-              provider: session.user.app_metadata?.provider || 'google',
-            }, { onConflict: 'id' })
-            .select()
-            .single();
+          // Profile doesn't exist - create it now
+          // This can happen if the DB trigger failed or email confirmation is required
+          console.log('Profile not found, creating new profile...');
+          
+          try {
+            const { data: newProfile, error: profileError } = await supabase
+              .from('users')
+              .insert({
+                id: session.user.id,
+                display_name: session.user.user_metadata?.display_name || 
+                              session.user.user_metadata?.full_name || 
+                              session.user.email?.split('@')[0] || 
+                              'User',
+                email: session.user.email || '',
+                zone: session.user.user_metadata?.zone || 'gelugor',
+                role: 'user',
+                provider: session.user.app_metadata?.provider || 'email',
+              })
+              .select()
+              .single();
 
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-            // If profile creation fails, we can still proceed with basic user info
-            // Just log the error and continue
+            if (profileError) {
+              console.error('Error creating profile:', profileError);
+            } else {
+              profile = newProfile;
+              console.log('Profile created successfully:', profile);
+            }
+          } catch (err) {
+            console.error('Unexpected error during profile creation:', err);
           }
-          profile = newProfile;
+
+          // If still no profile, continue anyway - we'll use auth user data
+          if (!profile) {
+            console.warn('Profile still missing; continuing with auth user only.');
+          }
         }
 
         // Set user in store

@@ -122,13 +122,13 @@ export default function PrayerTimesPage() {
                   {isActive && (
                     <div className="w-1 h-10 rounded-full bg-accent-warm" />
                   )}
-<div>
-<p className="font-display text-xs md:text-sm text-text-primary">{prayer.nameTransliterated}</p>
-                    <p className="font-body text-xs text-text-secondary">{prayer.label}</p>
+                <div>
+                  <p className="font-display text-sm md:text-base text-text-primary">{prayer.nameTransliterated}</p>
+                    <p className="font-body text-sm md:text-base text-text-secondary">{prayer.label}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`font-body text-sm md:text-base font-semibold ${
+                  <span className={`font-body text-lg md:text-xl font-semibold ${
                     isActive ? 'text-accent-warm' : 'text-text-primary'
                   }`}>
                     {time ? formatTime(time) : '--:--'}

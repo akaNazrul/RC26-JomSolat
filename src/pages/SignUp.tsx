@@ -48,7 +48,8 @@ export default function SignUp() {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        console.error('Sign up error returned from Supabase:', signUpError);
+        setError(signUpError.message || 'Failed to create account. Please try again.');
         setIsLoading(false);
         return;
       }
@@ -71,14 +72,34 @@ export default function SignUp() {
         setUser(user);
         navigate('/home');
       } else if (data.user) {
-        // Email confirmation is enabled — user must verify email first
-        setError('Account created! Please check your email to confirm your account before logging in.');
+        // Account created but session not immediately available
+        setError('Account created! Logging you in...');
+        // Give it a moment and try to fetch session
+        setTimeout(async () => {
+          const { data: sessionData } = await supabase.auth.getSession();
+          if (sessionData?.session?.user) {
+            const user = {
+              id: sessionData.session.user.id,
+              display_name: name,
+              email: email,
+              avatar_url: null,
+              zone: FIXED_ZONE,
+              role: 'user' as const,
+              provider: 'email' as const,
+              created_at: new Date().toISOString(),
+              last_seen_at: null,
+            };
+            setUser(user);
+            navigate('/home');
+          }
+        }, 1000);
       } else {
-        setError('Please check your email to confirm your account before logging in.');
+        setError('Account created, but something went wrong. Please log in.');
       }
     } catch (err) {
-      setError('Something went wrong. Please try again.');
       console.error('Signup error:', err);
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message || 'Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }

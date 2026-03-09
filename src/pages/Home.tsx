@@ -116,7 +116,7 @@ export default function Home() {
                   }`}
                 >
 <span className="font-display text-[10px] md:text-xs block mb-1">{prayer.nameTransliterated}</span>
-                  <span className="font-body text-xs md:text-sm font-medium">
+                  <span className="font-body text-sm md:text-base font-medium">
                     {prayerTimes ? formatTime(prayerTimes[prayer.key as keyof PrayerTimeData] as string) : '--:--'}
                   </span>
                 </button>

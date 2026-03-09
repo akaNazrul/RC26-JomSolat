@@ -6,21 +6,27 @@ import { supabase } from '@/lib/supabase';
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, theme, toggleTheme, setUser, setIsAuthenticated } = useAppStore();
+  const { user, theme, toggleTheme } = useAppStore();
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [isSendingPasswordReset, setIsSendingPasswordReset] = useState(false);
   const [passwordResetMessage, setPasswordResetMessage] = useState('');
   const [passwordResetError, setPasswordResetError] = useState('');
 
   const handleLogout = async () => {
+    setIsSigningOut(true);
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error signing out:', error);
+      } else {
+        // Sign out was successful — navigate to landing page
+        // The Supabase auth listener will automatically update the store
+        navigate('/', { replace: true });
+      }
     } catch (error) {
       console.error('Error signing out:', error);
-    } finally {
-      setUser(null);
-      setIsAuthenticated(false);
-      navigate('/');
+      setIsSigningOut(false);
     }
   };
 
@@ -211,9 +217,14 @@ export default function Profile() {
               <button
                 key={index}
                 onClick={action.onClick}
-                className="w-full flex items-center gap-3 p-4 rounded-xl bg-bg-surface border border-border-color"
+                disabled={isSigningOut}
+                className="w-full flex items-center gap-3 p-4 rounded-xl bg-bg-surface border border-border-color disabled:opacity-50"
               >
-                <action.icon size={20} className={action.color} />
+                {isSigningOut ? (
+                  <Loader2 size={18} className="animate-spin text-text-muted" />
+                ) : (
+                  <action.icon size={20} className={action.color} />
+                )}
                 <span className={`font-body ${action.color}`}>{action.label}</span>
               </button>
             ))}

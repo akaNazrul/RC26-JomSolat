@@ -93,7 +93,6 @@ export default function Landing() {
             Prayer times, events, and everything about Masjid Al-Malik Khalid USM — in one place.
           </p>
           
-<<<<<<< HEAD
           <div className="flex justify-center">
             {/* Learn More */}
             <button

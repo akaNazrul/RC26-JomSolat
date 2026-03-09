@@ -13,9 +13,9 @@ import PrayerTimes from '@/pages/PrayerTimes';
 import MosqueInfo from '@/pages/MosqueInfo';
 import Facilities from '@/pages/Facilities';
 import Parking from '@/pages/Parking';
-import Events from '@/pages/Events';
 import Profile from '@/pages/Profile';
 import AdminDashboard from '@/pages/AdminDashboard';
+import Feedpage from './pages/Feedpage';
 
 function App() {
   const { isAuthenticated, initSession, isLoading } = useAppStore();
@@ -58,7 +58,7 @@ function App() {
         <Route path="/mosque-info" element={<MosqueInfo />} />
         <Route path="/facilities" element={<Facilities />} />
         <Route path="/parking" element={<Parking />} />
-        <Route path="/events" element={<Events />} />
+        <Route path="/feed" element={<Feedpage />} />
         <Route path="/profile" element={<Profile />} />
         {/* Admin dashboard: always registered; component handles its own access check */}
         <Route path="/admin" element={<AdminDashboard />} />

@@ -1,29 +1,62 @@
-import { ChevronLeft, Car, Bike, MapPin, ExternalLink, Clock } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  ChevronLeft, MapPin, ExternalLink, 
+  Clock, Info, X, Maximize2, Map as MapIcon, Car, Bike
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Parking() {
+  // State for the Expandable Photo Modal
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  const photos = [
+    { url: "/entrance_pic.png", label: "Main Entrance Gate" },
+    { url: "/front_pic.png", label: "Front Gate Parking" },
+    { url: "/main_pic.png", label: "Main Parking Area" },
+    { url: "/back_pic.png", label: "Back Parking Area" },
+    { url: "/extra_pic.png", label: "Extra Parking Area" }
+  ];
+
+  // Big Map Picture for parking layout
+  const bigMapImage = "/heatmap.png";
+
+  // Parking zones info from Nazrul/feature
   const parkingZones = [
     { type: 'car', icon: Car, color: 'bg-red-500', label: 'Car Parking', capacity: '~100+ spaces', description: 'Main parking area adjacent to mosque' },
     { type: 'motorcycle', icon: Bike, color: 'bg-blue-500', label: 'Motorcycle Parking', capacity: '~100+ spaces', description: 'Covered parking near main entrance' },
   ];
 
-  const walkingRoutes = [
-    { from: 'Main Gate (Gerbang Utama)', time: '15 min' },
-    { from: 'Mosque Gate (Gerbang Masjid)', time: '5 min' },
-    { from: 'RST Gate (Gerbang RST)', time: '15 min' },
-  ];
-
   return (
-    <div className="min-h-screen bg-bg-base">
-      <header className="sticky top-0 z-40 bg-bg-base/80 backdrop-blur-md border-b border-border-color">
-        <div className="flex items-center gap-2 px-4 py-4">
-          <Link to="/home" className="p-2 -ml-2 rounded-full hover:bg-bg-surface">
+    <div className="min-h-screen bg-bg-base pb-20 transition-colors duration-300">
+      
+      {/* 🖼️ Full Screen Lightbox Modal */}
+      {selectedPhoto && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setSelectedPhoto(null)}
+        >
+          <button className="absolute top-6 right-6 p-3 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors">
+            <X size={24} />
+          </button>
+          <img 
+            src={selectedPhoto} 
+            className="max-w-full max-h-[85vh] rounded-3xl shadow-2xl animate-in zoom-in-95 duration-300" 
+            alt="Expanded view" 
+          />
+        </div>
+      )}
+
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-bg-base/80 backdrop-blur-md border-b border-border-color px-4 py-4">
+        <div className="flex items-center gap-3 max-w-2xl mx-auto">
+          <Link to="/home" className="p-2 -ml-2 rounded-full hover:bg-bg-surface transition-colors">
             <ChevronLeft size={24} className="text-text-primary" />
           </Link>
-          <h1 className="font-display text-xl text-text-primary">Parking & Location</h1>
+          <h1 className="font-display text-xl font-bold">Parking & Location</h1>
         </div>
       </header>
 
+<<<<<<< HEAD
       <div className="p-4 space-y-6">
         {/* Map */}
         <div className="h-64 rounded-2xl overflow-hidden bg-bg-surface border border-border-color">
@@ -38,63 +71,134 @@ export default function Parking() {
             title="Parking Location"
           />
         </div>
-
-        {/* Legend */}
-        <div className="p-4 rounded-2xl bg-bg-surface border border-border-color">
-          <h3 className="font-body font-semibold text-text-primary mb-3">Parking Zones</h3>
-          <div className="space-y-3">
+=======
+      <main className="max-w-2xl mx-auto p-4 space-y-8">
+        
+        {/* Parking Zones Info */}
+        <section className="space-y-4">
+          <h3 className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Parking Zones</h3>
+          <div className="grid grid-cols-2 gap-4">
             {parkingZones.map((zone) => (
-              <div key={zone.type} className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${zone.color}/20`}>
-                  <zone.icon size={20} className={zone.color.replace('bg-', 'text-')} />
+              <div key={zone.type} className="p-4 rounded-2xl bg-bg-surface border border-border-color">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`p-2 rounded-lg ${zone.color}/20`}>
+                    <zone.icon size={20} className={zone.color.replace('bg-', 'text-')} />
+                  </div>
+                  <p className="font-body font-bold text-xs text-accent-primary">{zone.label}</p>
                 </div>
-                <div>
-                  <p className="font-body font-medium text-text-primary">{zone.label}</p>
-                  <p className="font-body text-xs text-text-muted">{zone.capacity} · {zone.description}</p>
+                <p className="text-xs text-text-muted mb-1">{zone.capacity}</p>
+                <p className="text-[10px] text-text-secondary">{zone.description}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+        
+        {/* 1. 📸 Top Photo Gallery (Expandable) */}
+        <section className="space-y-4">
+          <div className="flex items-end justify-between px-1">
+            <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Entrance Previews</h3>
+            <span className="text-[10px] text-accent-primary font-bold">Tap to expand</span>
+          </div>
+          <div className="flex gap-4 overflow-x-auto snap-x no-scrollbar pb-2">
+            {photos.map((photo, i) => (
+              <div 
+                key={i} 
+                className="flex-none w-52 snap-start group cursor-pointer"
+                onClick={() => setSelectedPhoto(photo.url)}
+              >
+                <div className="relative aspect-square rounded-[2rem] overflow-hidden border-2 border-border-color transition-all group-hover:border-accent-primary shadow-lg">
+                  <img 
+                    src={photo.url} 
+                    alt={photo.label} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+                  <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
+                    <p className="text-[10px] font-bold uppercase tracking-tight">{photo.label}</p>
+                    <Maximize2 size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        </section>
+>>>>>>> Adam/feed
+
+        {/* 2. 🖼️ NEW: Big Map Picture Section */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+             <h3 className="text-xs font-black uppercase tracking-widest text-text-muted">Parking Layout</h3>
+             <span className="text-[10px] text-accent-warm font-bold uppercase">USM Campus Blueprint</span>
+          </div>
+          <div 
+            className="relative h-80 rounded-[2.5rem] overflow-hidden border-2 border-border-color shadow-2xl cursor-pointer group"
+            onClick={() => setSelectedPhoto(bigMapImage)}
+          >
+            {/* The Big Picture */}
+            <img 
+              src={bigMapImage} 
+              alt="Detailed Parking Map" 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+            
+            {/* Floating Indicator */}
+            <div className="absolute bottom-6 left-6 flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-white shadow-xl">
+              <MapIcon size={18} className="text-accent-warm" />
+              <span className="text-xs font-bold">Tap to view full map</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 3. Walking Times from Campus Hostels */}
+        <div className="p-6 rounded-[2.5rem] bg-bg-surface border border-border-color shadow-sm">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="p-2 bg-accent-primary/10 rounded-xl text-accent-primary">
+              <Clock size={20} />
+            </div>
+            <h3 className="font-display font-bold text-base text-text-primary">Estimated Walking Times</h3>
+          </div>
+          <div className="space-y-3">
+            {[
+              { from: 'Gerbang Utama (USM)', time: '15 min' },
+              { from: 'Pusat Islam Entrance', time: '5 min' },
+              { from: 'Hostel RST / Fajar', time: '15 min' }
+            ].map((route) => (
+              <div key={route.from} className="flex items-center justify-between p-4 rounded-2xl bg-bg-base border border-border-color/50">
+                <div className="flex items-center gap-3">
+                    <MapPin size={14} className="text-accent-warm" />
+                    <span className="text-xs font-bold text-text-secondary">{route.from}</span>
+                </div>
+                <span className="text-xs font-black text-accent-primary">{route.time}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Walking Routes */}
-        <div className="p-4 rounded-2xl bg-bg-surface border border-border-color">
-          <h3 className="font-body font-semibold text-text-primary mb-3">Walking Routes from Campus</h3>
-          <div className="space-y-2">
-            {walkingRoutes.map((route, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-bg-base">
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-accent-primary" />
-                  <span className="font-body text-sm text-text-secondary">{route.from}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock size={14} className="text-text-muted" />
-                  <span className="font-body text-sm text-text-muted">{route.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA */}
+        {/* CTA: Navigation Intent */}
         <a
-          href="https://www.google.com/maps/dir//Masjid+Al-Malik+Khalid+USM"
+          href="https://www.google.com/maps/dir/?api=1&destination=Pusat+Islam+USM"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-accent-warm text-white font-body font-semibold hover:bg-accent-warm/90 transition-colors"
+          className="flex items-center justify-center gap-3 w-full py-5 rounded-[2rem] bg-accent-warm text-white font-bold shadow-xl shadow-accent-warm/20 hover:scale-[1.02] active:scale-95 transition-all"
         >
           <ExternalLink size={20} />
-          Open in Google Maps
+          Open Live Navigation
         </a>
 
-        {/* Info */}
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
-          <p className="font-body text-sm text-amber-500">
-            <strong>Note:</strong> Parking is limited during Friday prayers and Ramadan. Arrive early for best availability. No overnight parking allowed.
+        {/* Informational Footer Note */}
+        <div className="flex gap-4 p-5 bg-bg-surface rounded-[2rem] border border-border-color">
+          <div className="p-2 bg-accent-primary/10 rounded-xl text-accent-primary shrink-0 h-fit">
+            <Info size={18} />
+          </div>
+          <p className="text-[11px] text-text-muted leading-relaxed font-medium italic">
+            <strong>USM Policy:</strong> Unauthorized parking on green areas is subject to clamping. Please use designated bays highlighted in the map above.
           </p>
         </div>
-      </div>
+
+      </main>
     </div>
   );
 }
-

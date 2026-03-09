@@ -184,5 +184,36 @@ input, textarea, select {
     backdrop-filter: blur(10px);
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
+
+  /* Calendar Dark Mode (Default) */
+.react-calendar {
+  background: transparent !important;
+  color: var(--text-primary) !important;
+  border: none !important;
+}
+
+/* Calendar Light Mode Override */
+.light-calendar .react-calendar {
+  color: #1e293b !important; /* Force dark text for visibility */
+}
+
+.light-calendar .react-calendar__tile:enabled:hover,
+.light-calendar .react-calendar__tile:enabled:focus {
+  background-color: #f1f5f9 !important;
+}
+
+.light-calendar .react-calendar__navigation button {
+  color: #1e293b !important;
+}
+
+/* Shared Highlight Style */
+.event-tile {
+  background: #f59e0b !important; /* accent-warm */
+  color: white !important;
+  border-radius: 12px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
 }
 

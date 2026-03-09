@@ -9,6 +9,7 @@ interface FacilityData {
   status: 'available' | 'limited' | 'closed' | 'info';
   shortDescription: string;
   fullDescription: string;
+  image?: string;
 }
 
 export default function Facilities() {
@@ -22,6 +23,7 @@ export default function Facilities() {
       status: 'available',
       shortDescription: 'Separate wudhu facilities for men and women. Available 24 hours.',
       fullDescription: 'The mosque provides dedicated wudhu areas for both male and female jemaah located on the ground floor. Both sections are accessible at all hours including outside main prayer times. Both areas are equipped with modern facilities.',
+      image: '/assets/Screenshot 2026-03-09 170906.png',
     },
     {
       id: 'women',
@@ -46,6 +48,7 @@ export default function Facilities() {
       status: 'available',
       shortDescription: 'Fully air-conditioned main prayer hall.',
       fullDescription: 'The main prayer hall is fully equipped with central air conditioning, providing a comfortable environment for daily prayers, Friday prayers, and all-night taraweeh sessions during Ramadan.',
+      image: '/assets/Screenshot 2026-03-09 170911.png',
     },
     {
       id: 'library',
@@ -70,6 +73,7 @@ export default function Facilities() {
       status: 'limited',
       shortDescription: 'Car parking available nearby. Limited spaces — peak times on Fridays.',
       fullDescription: 'Car parking is available in the designated lots adjacent to the mosque. Spaces are limited, especially during Friday prayers and Ramadan taraweeh.',
+      image: '/assets/Screenshot 2026-03-09 170902.png',
     },
     {
       id: 'motopark',
@@ -148,6 +152,13 @@ export default function Facilities() {
             
             {expandedId === facility.id && (
               <div className="mt-3 pt-3 border-t border-border-color">
+                {facility.image && (
+                  <img 
+                    src={facility.image} 
+                    alt={facility.title}
+                    className="w-full h-40 object-cover rounded-lg mb-3"
+                  />
+                )}
                 <p className="font-body text-sm text-text-secondary leading-relaxed text-justify">
                   {facility.fullDescription}
                 </p>

@@ -56,8 +56,7 @@ export default function Parking() {
         </div>
       </header>
 
-<<<<<<< HEAD
-      <div className="p-4 space-y-6">
+      <main className="max-w-2xl mx-auto p-4 space-y-8">
         {/* Map */}
         <div className="h-64 rounded-2xl overflow-hidden bg-bg-surface border border-border-color">
           <iframe 
@@ -71,9 +70,7 @@ export default function Parking() {
             title="Parking Location"
           />
         </div>
-=======
-      <main className="max-w-2xl mx-auto p-4 space-y-8">
-        
+
         {/* Parking Zones Info */}
         <section className="space-y-4">
           <h3 className="text-xs font-black uppercase tracking-widest text-text-muted px-1">Parking Zones</h3>
@@ -92,7 +89,7 @@ export default function Parking() {
             ))}
           </div>
         </section>
-        
+
         {/* 1. 📸 Top Photo Gallery (Expandable) */}
         <section className="space-y-4">
           <div className="flex items-end justify-between px-1">
@@ -122,7 +119,6 @@ export default function Parking() {
             ))}
           </div>
         </section>
->>>>>>> Adam/feed
 
         {/* 2. 🖼️ NEW: Big Map Picture Section */}
         <section className="space-y-4">

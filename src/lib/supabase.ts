@@ -1,8 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+// Environment variable access (fall back to process.env for tests)
+const metaEnv = (typeof import.meta !== 'undefined') ? (import.meta as any).env : undefined;
+const ENV: Record<string, any> = metaEnv && Object.keys(metaEnv || {}).length ? metaEnv : process.env;
 // Environment variable validation - fail fast if missing
 const getEnvVar = (name: string): string => {
-  const value = import.meta.env[name];
+  const value = ENV[name];
   if (!value) {
     console.error(`Missing required environment variable: ${name}`);
     throw new Error(`Configuration error: ${name} is not set`);
@@ -16,10 +19,11 @@ const SUPABASE_ANON_KEY = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 // Security: List of allowed origins for CORS (configure in Supabase Dashboard)
 // Add your production domains to this list
-const ALLOWED_ORIGINS = (
-  import.meta.env.VITE_ALLOWED_ORIGINS || 
-  'http://localhost:5173'
-).split(',').map((o: string) => o.trim()).filter(Boolean);
+// Compute allowed origins at call-time so tests can set env before use
+const computeAllowedOrigins = (): string[] => {
+  const raw = (metaEnv && metaEnv.VITE_ALLOWED_ORIGINS) || (process.env && process.env.VITE_ALLOWED_ORIGINS) || 'http://localhost:5173';
+  return (raw as string).split(',').map((o: string) => o.trim()).filter(Boolean);
+};
 
 // Secure storage adapter with XSS protection
 const getSecureStorage = () => {
@@ -66,29 +70,65 @@ const getSecureStorage = () => {
   };
 };
 
-// Create Supabase client with enhanced security configurations
-export const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    storage: getSecureStorage(),
-    // Use PKCE flow for better security
-    flowType: 'pkce',
-  },
-  // Global headers for additional security tracking
-  global: {
-    headers: {
-      'X-Client-Info': 'jom-solat-web',
+// Lazy-initialized Supabase client to avoid import-time side-effects and
+// improve testability. Use `getSupabase()` to obtain the client programmatically.
+let _supabase: SupabaseClient | null = null;
+
+function createSupabaseClient(): SupabaseClient {
+  const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
+  const SUPABASE_ANON_KEY = getEnvVar('VITE_SUPABASE_ANON_KEY');
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+      storage: getSecureStorage(),
+      flowType: 'pkce',
     },
-  },
-});
+    global: {
+      headers: {
+        'X-Client-Info': 'jom-solat-web',
+      },
+    },
+  });
+  _supabase = client;
+  return client;
+}
+
+export function getSupabase(): SupabaseClient {
+  return _supabase ?? createSupabaseClient();
+}
+
+// Export `supabase` as a transparent proxy that initializes the real client
+// on first access so existing imports continue to work.
+export const supabase: any = new Proxy(
+  {},
+  {
+    get(_target, prop) {
+      const client = getSupabase();
+      // @ts-ignore
+      return (client as any)[prop];
+    },
+    set(_target, prop, value) {
+      const client = getSupabase();
+      // @ts-ignore
+      (client as any)[prop] = value;
+      return true;
+    },
+    apply(_target, thisArg, args) {
+      const client = getSupabase();
+      // @ts-ignore
+      return (client as any).apply(thisArg, args);
+    },
+  }
+);
 
 // Export allowed origins for use in Edge Functions and CORS validation
-export const getAllowedOrigins = (): string[] => ALLOWED_ORIGINS;
+export const getAllowedOrigins = (): string[] => computeAllowedOrigins();
 
 // Helper to validate origin against allowed list
 export const isOriginAllowed = (origin: string): boolean => {
+  const ALLOWED_ORIGINS = computeAllowedOrigins();
   return ALLOWED_ORIGINS.some((allowed: string) => 
     allowed === origin || 
     allowed === '*'

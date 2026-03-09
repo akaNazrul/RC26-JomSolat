@@ -12,6 +12,7 @@ export default function ResetPassword() {
   const [isVerifying, setIsVerifying] = useState(true);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [hasRecoveryToken, setHasRecoveryToken] = useState<boolean | null>(null);
 
   // Exchange the code / token from the password-reset email link for a session.
   useEffect(() => {
@@ -31,41 +32,31 @@ export default function ResetPassword() {
 
         // Check for password recovery token (PKCE flow with code or legacy flow with token)
         if (type === 'recovery') {
-          if (searchParams.has('code')) {
-            // PKCE flow: exchange code for session
-            console.log('Using PKCE flow for password recovery...');
-            const { error: exchangeError, data } = await supabase.auth.exchangeCodeForSession(
-              window.location.href
-            );
-            if (exchangeError) {
-              console.error('Code exchange failed:', exchangeError);
-              setError('Invalid or expired reset link. Please request a new one.');
-              setIsVerifying(false);
-              return;
-            }
-            console.log('Code exchange successful:', data);
-          } else if (hashParams.has('access_token')) {
-            // Legacy implicit flow: token is already in URL, Supabase handles it automatically
-            console.log('Using legacy flow for password recovery...');
-            // Wait a moment for Supabase to auto-detect the session from URL
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
+          // Supabase client is configured with `detectSessionInUrl: true` which
+          // automatically exchanges the code/token and persists the session.
+          // Calling exchangeCodeForSession manually can conflict with the
+          // built-in handler and produce storage lock errors ("lock broken...").
+          // Wait briefly for Supabase to process the URL, then verify session.
+          await new Promise((resolve) => setTimeout(resolve, 700));
 
-          // Verify we have an active session
           const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
           if (sessionError || !sessionData?.session) {
-            console.error('No session after recovery token exchange:', sessionError);
+            console.error('No session after recovery processing:', sessionError);
             setError('Invalid or expired reset link. Please request a new one.');
             setIsVerifying(false);
             return;
           }
 
           console.log('Session established for password reset');
+          setHasRecoveryToken(true);
           setIsVerifying(false);
         } else {
-          // No valid reset token in URL
-          console.error('No recovery type found in URL');
-          setError('Invalid reset link. Please request a new password reset.');
+          // No recovery token present in the URL. This happens when a user
+          // navigates to /reset-password manually or immediately after
+          // requesting a new link — show a neutral/info state instead of
+          // an alarmed error message.
+          console.info('No recovery token found in URL');
+          setHasRecoveryToken(false);
           setIsVerifying(false);
           return;
         }
@@ -170,6 +161,20 @@ export default function ResetPassword() {
               <p className="font-body text-text-secondary mb-8">
                 Choose a strong password for your JomSolat account.
               </p>
+
+              {/* If there's no recovery token, show a helpful prompt instead of
+                  an error. When `hasRecoveryToken` is null we're still verifying. */}
+              {hasRecoveryToken === false && (
+                <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 text-yellow-300 text-sm">
+                  No reset token found in the URL. Please open the password reset
+                  link from your email or request a new one.
+                  <div className="mt-2">
+                    <Link to="/forgot-password" className="underline font-semibold text-yellow-200">
+                      Request a new link
+                    </Link>
+                  </div>
+                </div>
+              )}
 
               {error && (
                 <div className="mb-4 p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">

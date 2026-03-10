@@ -56,6 +56,27 @@
       {"@context":"https://schema.org","@type":"Organization","name":"JomSolat","url":"https://rc26-jomsolat.vercel.app","logo":"https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg"}
     </script>
 
+    <!-- LocalBusiness / Place structured data for Masjid Al-Malik Khalid -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Place",
+        "name": "Masjid Al-Malik Khalid (JomSolat)",
+        "url": "https://rc26-jomsolat.vercel.app",
+        "telephone": "04-653 3910",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Universiti Sains Malaysia",
+          "addressLocality": "Gelugor",
+          "addressRegion": "Penang",
+          "postalCode": "11800",
+          "addressCountry": "MY"
+        },
+        "geo": { "@type": "GeoCoordinates", "latitude": 5.353702294625012, "longitude": 100.29939657438402 },
+        "openingHours": "Mo-Su 05:00-22:00"
+      }
+    </script>
+
     <!-- Google Analytics (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-2166S087HK"></script>
     <script>
@@ -82,6 +103,12 @@
     </script>
   </head>
   <body>
+    <noscript>
+      <div style="padding:16px;background:#fff;border-bottom:1px solid #eee;">
+        <h1 style="margin:0;font-size:18px;">JomSolat — Masjid Al‑Malik Khalid (USM)</h1>
+        <p style="margin:6px 0 0;color:#444;">Accurate prayer times, events, facilities and mosque notices for Masjid Al‑Malik Khalid at Universiti Sains Malaysia. Visit the <a href="/prayer-times">Prayer Times</a> page for today's schedule.</p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

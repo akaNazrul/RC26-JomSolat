@@ -42,6 +42,19 @@ const Feedpage: React.FC = () => {
     fetchFeed();
   }, []);
 
+  useEffect(() => {
+    document.title = 'Mosque Updates — JomSolat';
+    const desc = document.querySelector('meta[name="description"]');
+    const content = 'Latest community updates, events and announcements from Masjid Al-Malik Khalid (Pusat Islam USM).';
+    if (desc) desc.setAttribute('content', content);
+    else {
+      const m = document.createElement('meta');
+      m.name = 'description';
+      m.content = content;
+      document.head.appendChild(m);
+    }
+  }, []);
+
   // 🧠 THE INTELLIGENT ENGINE: Mapping, Categorizing, and Scoring
   const processedData = useMemo(() => {
     const today = new Date();

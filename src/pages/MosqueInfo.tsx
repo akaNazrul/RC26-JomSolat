@@ -19,6 +19,19 @@ export default function MosqueInfo() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [qrEnlarged]);
 
+  useEffect(() => {
+    document.title = 'Masjid Al-Malik Khalid — Mosque Info | JomSolat';
+    const desc = document.querySelector('meta[name="description"]');
+    const content = 'Masjid Al-Malik Khalid (Pusat Islam USM) — address, contact, donation information, and opening hours.';
+    if (desc) desc.setAttribute('content', content);
+    else {
+      const m = document.createElement('meta');
+      m.name = 'description';
+      m.content = content;
+      document.head.appendChild(m);
+    }
+  }, []);
+
   const infoRows = [
     { icon: MapPin, label: 'Address', value: 'Universiti Sains Malaysia, 11800 USM, Penang' },
     { icon: Phone, label: 'Phone', value: '04-653 3910/3753' },

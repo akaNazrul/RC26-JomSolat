@@ -23,6 +23,18 @@ interface FeedEvent {
 }
 
 export default function Home() {
+  useEffect(() => {
+    document.title = 'JomSolat — Home — Prayer Times & Mosque Updates';
+    const desc = document.querySelector('meta[name="description"]');
+    const content = 'JomSolat — Accurate prayer times, mosque events and facilities for Masjid Al-Malik Khalid (USM).';
+    if (desc) desc.setAttribute('content', content);
+    else {
+      const m = document.createElement('meta');
+      m.name = 'description';
+      m.content = content;
+      document.head.appendChild(m);
+    }
+  }, []);
   const { user, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string>('fajr');

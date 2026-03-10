@@ -4,6 +4,14 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
 import { buildUserObject } from '@/lib/user';
+import { ClientRateLimiter, validateInput } from '@/lib/security';
+
+// Input max length constants
+const MAX_EMAIL_LENGTH = 255;
+const MAX_PASSWORD_LENGTH = 128;
+
+// Create rate limiter instance - 5 attempts per minute
+const loginLimiter = new ClientRateLimiter(5, 60000);
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,6 +26,13 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setError('');
+
+    // Check rate limit before processing
+    if (!loginLimiter.canMakeRequest(email)) {
+      setError('Too many login attempts. Please try again in a minute.');
+      setIsLoading(false);
+      return;
+    }
 
     // Client-side validation
     if (!email.trim()) {
@@ -102,6 +117,7 @@ export default function Login() {
         navigate('/home');
       }
     } catch (err) {
+      // Generic error message for security
       setError('An unexpected error occurred. Please try again.');
       console.error('Login error:', err);
     } finally {
@@ -112,11 +128,15 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError('');
+    
     try {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { 
+            prompt: 'select_account',
+          },
         },
       });
       if (authError) {
@@ -164,9 +184,10 @@ export default function Login() {
                   id="login-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(validateInput(e.target.value, MAX_EMAIL_LENGTH))}
                   placeholder="your@email.com"
                   autoComplete="email"
+                  maxLength={MAX_EMAIL_LENGTH}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -186,9 +207,10 @@ export default function Login() {
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(validateInput(e.target.value, MAX_PASSWORD_LENGTH))}
                   placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
                   autoComplete="current-password"
+                  maxLength={MAX_PASSWORD_LENGTH}
                   className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
                 <button

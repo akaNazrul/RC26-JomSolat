@@ -3,9 +3,18 @@
  * Provides input validation, sanitization, and security helpers
  */
 
+
 // ===========================================
 // Input Validation
 // ===========================================
+
+/**
+ * Validate and sanitize string input with max length
+ */
+export const validateInput = (input: string | undefined | null, maxLength: number = 255): string => {
+  if (!input || typeof input !== 'string') return '';
+  return input.trim().slice(0, maxLength);
+};
 
 /**
  * Validate email format
@@ -79,20 +88,70 @@ export const truncateString = (str: string, maxLength: number): string => {
   return str.slice(0, maxLength - 3) + '...';
 };
 
+
+
+
+
+
+
+
 // ===========================================
 // Security Helpers
 // ===========================================
 
 /**
- * Generate a random string (for tokens, etc.)
+ * Generate a cryptographically secure random string
+ * (for tokens, OAuth state, etc.)
  */
 export const generateRandomString = (length: number): string => {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  return Array.from(array, (byte) => chars[byte % chars.length]).join('');
+};
+
+// ===========================================
+// OAuth State Validation
+// ===========================================
+
+const STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
+
+/**
+ * Generate OAuth state with expiration for CSRF protection
+ */
+export const generateOAuthState = (): string => {
+  const state = crypto.randomUUID();
+  const expiry = Date.now() + STATE_EXPIRY_MS;
+  sessionStorage.setItem('oauth_state', JSON.stringify({ state, expiry }));
+  return state;
+};
+
+/**
+ * Validate OAuth state with expiration check
+ * Returns true if valid, false otherwise
+ */
+export const validateOAuthState = (returnedState: string): boolean => {
+  const stored = sessionStorage.getItem('oauth_state');
+  if (!stored) return false;
+  
+  try {
+    const { state, expiry } = JSON.parse(stored);
+    // Check if expired
+    if (Date.now() > expiry) {
+      sessionStorage.removeItem('oauth_state');
+      return false;
+    }
+    return state === returnedState;
+  } catch {
+    return false;
   }
-  return result;
+};
+
+/**
+ * Clear OAuth state from session storage
+ */
+export const clearOAuthState = (): void => {
+  sessionStorage.removeItem('oauth_state');
 };
 
 /**
@@ -195,32 +254,96 @@ export const sanitizeUserInput = (input: string): string => {
     .replace(/on\w+=/gi, ''); // Remove event handlers
 };
 
+
 // ===========================================
 // Password Validation
 // ===========================================
 
+// Common passwords list (simplified - in production, use a larger list or API)
+const COMMON_PASSWORDS = [
+  'password', 'password123', 'password1', '123456', '12345678', '123456789',
+  'qwerty', 'abc123', 'monkey', 'master', 'dragon', '111111', 'baseball',
+  'iloveyou', 'trustno1', 'sunshine', 'princess', 'welcome', 'shadow',
+  'supabase', 'admin123', 'letmein', 'football', 'password1234', 'michael',
+  'jennifer', 'jordan', 'admin', 'login', 'passw0rd', 'hello', 'charlie'
+];
+
 /**
- * Validate password strength
+ * Enhanced password validation with strength checking
  */
-export const validatePassword = (password: string): { valid: boolean; errors: string[] } => {
+export const validatePassword = (password: string): { valid: boolean; errors: string[]; strength: 'weak' | 'medium' | 'strong' } => {
   const errors: string[] = [];
+  let score = 0;
   
+  // Length check
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters');
+  } else if (password.length >= 12) {
+    score += 1;
   }
+  
+  if (password.length >= 16) {
+    score += 1;
+  }
+  
+  // Uppercase check
   if (!/[A-Z]/.test(password)) {
     errors.push('Password must contain at least one uppercase letter');
+  } else {
+    score += 1;
   }
+  
+  // Lowercase check
   if (!/[a-z]/.test(password)) {
     errors.push('Password must contain at least one lowercase letter');
+  } else {
+    score += 1;
   }
+  
+  // Number check
   if (!/[0-9]/.test(password)) {
     errors.push('Password must contain at least one number');
+  } else {
+    score += 1;
+  }
+  
+  // Special character check
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  } else {
+    score += 1;
+  }
+  
+  // Check against common passwords
+  if (COMMON_PASSWORDS.includes(password.toLowerCase())) {
+    errors.push('Password is too common - choose a stronger password');
+    score = 0;
+  }
+  
+  // Check for repeated characters (e.g., "aaa", "111")
+  if (/(.)\1{2,}/.test(password)) {
+    errors.push('Password should not contain repeated characters');
+  }
+  
+  // Check for sequential characters (e.g., "123", "abc")
+  const sequentialPatterns = ['012', '123', '234', '345', '456', '567', '678', '789', 'abc', 'bcd', 'cde', 'def', 'efg', 'fgh', 'ghi', 'hij', 'ijk', 'jkl', 'klm', 'lmn', 'mno', 'nop', 'opq', 'pqr', 'qrs', 'rst', 'stu', 'tuv', 'uvw', 'vwx', 'wxy', 'xyz'];
+  const lowerPassword = password.toLowerCase();
+  if (sequentialPatterns.some(pattern => lowerPassword.includes(pattern))) {
+    errors.push('Password should not contain sequential characters');
+  }
+  
+  // Determine strength
+  let strength: 'weak' | 'medium' | 'strong' = 'weak';
+  if (score >= 5 && errors.length === 0) {
+    strength = 'strong';
+  } else if (score >= 3 && errors.length <= 2) {
+    strength = 'medium';
   }
   
   return {
     valid: errors.length === 0,
     errors,
+    strength,
   };
 };
 

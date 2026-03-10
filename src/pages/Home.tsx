@@ -5,6 +5,7 @@ import { useAppStore } from '@/store/useAppStore';
 import DonutTimer from '@/components/DonutTimer';
 import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 import { getSupabase } from '@/lib/supabase';
+import { sanitizeHtml } from '@/lib/security';
 
 interface UpcomingEvent {
   id: string;
@@ -240,7 +241,7 @@ export default function Home() {
                         {event.type}
                       </span>
                       <p className="font-body text-xs text-text-secondary line-clamp-2">
-                        {event.caption?.substring(0, 60)}{event.caption && event.caption.length > 60 ? '...' : ''}
+                        {sanitizeHtml(event.caption?.substring(0, 60))}{event.caption && event.caption.length > 60 ? '...' : ''}
                       </p>
                       <div className="flex items-center gap-1 text-text-muted">
                         <Heart size={12} />

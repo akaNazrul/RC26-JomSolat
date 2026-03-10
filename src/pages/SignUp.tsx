@@ -3,9 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
+import { validatePassword, validateInput } from '@/lib/security';
 
 // Prayer zone is fixed to USM Induk / Gelugor — all users are part of this community
 const FIXED_ZONE = 'gelugor' as const;
+
+// Input max length constants
+const MAX_NAME_LENGTH = 100;
+const MAX_EMAIL_LENGTH = 255;
+const MAX_PASSWORD_LENGTH = 128;
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -29,8 +35,10 @@ export default function SignUp() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    // Use strong password validation
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      setError(validation.errors.join('. '));
       setIsLoading(false);
       return;
     }
@@ -97,9 +105,9 @@ export default function SignUp() {
         setError('Account created, but something went wrong. Please log in.');
       }
     } catch (err) {
+      // Generic error message for security
       console.error('Signup error:', err);
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message || 'Something went wrong. Please try again.');
+      setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -108,12 +116,15 @@ export default function SignUp() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
     setError('');
+    
     try {
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: { prompt: 'select_account' },
+          queryParams: { 
+            prompt: 'select_account',
+          },
         },
       });
       if (authError) {
@@ -161,9 +172,10 @@ export default function SignUp() {
                   id="signup-name"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(validateInput(e.target.value, MAX_NAME_LENGTH))}
                   placeholder="Your name"
                   autoComplete="name"
+                  maxLength={MAX_NAME_LENGTH}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -178,9 +190,10 @@ export default function SignUp() {
                   id="signup-email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(validateInput(e.target.value, MAX_EMAIL_LENGTH))}
                   placeholder="your@email.com"
                   autoComplete="email"
+                  maxLength={MAX_EMAIL_LENGTH}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>
@@ -195,9 +208,10 @@ export default function SignUp() {
                   id="signup-password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(validateInput(e.target.value, MAX_PASSWORD_LENGTH))}
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  maxLength={MAX_PASSWORD_LENGTH}
                   className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
                 <button
@@ -219,9 +233,10 @@ export default function SignUp() {
                   id="signup-confirm"
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(validateInput(e.target.value, MAX_PASSWORD_LENGTH))}
                   placeholder="••••••••"
                   autoComplete="new-password"
+                  maxLength={MAX_PASSWORD_LENGTH}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
               </div>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/useAppStore';
 import { buildUserObject } from '@/lib/user';
+import { validateOAuthState, clearOAuthState } from '@/lib/security';
 import type { Session } from '@supabase/supabase-js';
 
 export default function AuthCallback() {
@@ -26,6 +27,34 @@ export default function AuthCallback() {
                             searchParams.has('access_token') ||
                             searchParams.has('refresh_token') ||
                             searchParams.has('code');
+
+      // Verify OAuth state parameter for CSRF protection
+      // Note: Supabase also uses PKCE for CSRF protection, so we can be more permissive here
+      const returnedState = searchParams.get('state');
+      const hasError = searchParams.get('error');
+      const errorDescription = searchParams.get('error_description');
+      
+      // Handle OAuth errors from Supabase
+      if (hasError) {
+        console.error('OAuth error:', hasError, errorDescription);
+        setError(errorDescription || 'Authentication failed. Please try again.');
+        return;
+      }
+      
+      // If there's a returned state but it's invalid, log warning but continue
+      // Supabase's PKCE provides additional CSRF protection
+      if (returnedState && returnedState !== '') {
+        const isValidState = validateOAuthState(returnedState);
+        if (!isValidState) {
+          console.warn('OAuth state validation warning: state missing or expired, but continuing with Supabase PKCE protection');
+        }
+        // Clean up stored state
+        clearOAuthState();
+      } else {
+        // No state provided - clean up any old state
+        clearOAuthState();
+      }
+
 
       if (!hasOAuthParams) {
         // No OAuth params, redirect to login

@@ -23,12 +23,13 @@ const computeAllowedOrigins = (): string[] => {
   return (raw as string).split(',').map((o: string) => o.trim()).filter(Boolean);
 };
 
-// Secure storage adapter with XSS protection
+// Secure storage adapter using sessionStorage for better security
+// Session storage is cleared when the browser tab is closed, reducing XSS impact
 const getSecureStorage = () => {
   return {
     getItem: (key: string): string | null => {
       try {
-        const value = localStorage.getItem(key);
+        const value = sessionStorage.getItem(key);
         if (!value) return null;
         
         // Validate token structure before returning
@@ -53,14 +54,14 @@ const getSecureStorage = () => {
           console.warn('Attempted to store non-string value');
           return;
         }
-        localStorage.setItem(key, value);
+        sessionStorage.setItem(key, value);
       } catch (e) {
         console.error('Failed to store item:', e);
       }
     },
     removeItem: (key: string): void => {
       try {
-        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
       } catch (e) {
         console.error('Failed to remove item:', e);
       }

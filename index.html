@@ -15,6 +15,7 @@
     
     <!-- SEO Meta Tags -->
     <title>JomSolat - Masjid Al-Malik Khalid Digital Companion | Prayer Times, Events & More</title>
+    <link rel="canonical" href="https://rc26-jomsolat.vercel.app/" />
     <meta name="description" content="JomSolat - Your complete digital companion for Masjid Al-Malik Khalid USM. Get accurate prayer times, upcoming events, facilities info, parking updates, and mosque announcements all in one place." />
     <meta name="keywords" content="JomSolat, Masjid Al-Malik Khalid, Masjid USM, Prayer Times, Solat Times Malaysia, Mosque Events, USM Mosque, Masjid Malaysia, Islamic Events, Friday Prayer, Solat Jamaah" />
     <meta name="author" content="JomSolat Team" />
@@ -24,17 +25,17 @@
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://jomsolat.vercel.app/" />
+    <meta property="og:url" content="https://rc26-jomsolat.vercel.app/" />
     <meta property="og:title" content="JomSolat - Masjid Al-Malik Khalid Digital Companion" />
     <meta property="og:description" content="Get accurate prayer times, events, facilities info, and mosque updates all in one place." />
-    <meta property="og:image" content="https://jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
+    <meta property="og:image" content="https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://jomsolat.vercel.app/" />
+    <meta property="twitter:url" content="https://rc26-jomsolat.vercel.app/" />
     <meta property="twitter:title" content="JomSolat - Masjid Al-Malik Khalid Digital Companion" />
     <meta property="twitter:description" content="Get accurate prayer times, events, facilities info, and mosque updates all in one place." />
-    <meta property="twitter:image" content="https://jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
+    <meta property="twitter:image" content="https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg" />
     
     <!-- PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -50,6 +51,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
     <!-- Prevent theme flicker - must be in head before React loads -->
+    <!-- Organization structured data (helps SEO rich results) -->
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"Organization","name":"JomSolat","url":"https://rc26-jomsolat.vercel.app","logo":"https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg"}
+    </script>
+
+    <!-- Google Analytics (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2166S087HK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);} 
+      gtag('js', new Date());
+      gtag('config', 'G-2166S087HK');
+    </script>
     <script>
       (function() {
         try {

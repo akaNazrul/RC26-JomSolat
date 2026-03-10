@@ -204,7 +204,22 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Feed Events Carousel */}
+          {/* Upcoming Events (shows only when available) */}
+          {upcomingEvents.length > 0 && (
+            <div>
+              <h2 className="font-display text-lg text-text-primary mb-3">Upcoming Events</h2>
+              <div className="grid gap-3">
+                {upcomingEvents.map((ev) => (
+                  <div key={ev.id} className="p-3 bg-bg-surface border border-border-color rounded-2xl">
+                    <div className="font-medium text-text-primary">{ev.title}</div>
+                    <div className="text-sm text-text-secondary">{ev.event_date} · {ev.type}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Feed Events Carousel */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-display text-lg text-text-primary">Mosque Updates</h2>

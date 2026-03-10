@@ -39,6 +39,9 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Allow larger assets (images) to be precached by workbox.
+        // Some supplied images exceed the default 2 MiB limit.
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Waves, Car, Calendar, ChevronRight } from 'lucide-react';
+import { Building2, Waves, Car, Calendar, ChevronRight, Heart } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import DonutTimer from '@/components/DonutTimer';
 import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
-import { supabase } from '@/lib/supabase';
+import { getSupabase } from '@/lib/supabase';
 
 interface UpcomingEvent {
   id: string;
@@ -13,11 +13,20 @@ interface UpcomingEvent {
   type: string;
 }
 
+interface FeedEvent {
+  id: string;
+  caption: string;
+  display_url: string;
+  likes_count: number;
+  type: string;
+}
+
 export default function Home() {
   const { user, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string>('fajr');
   const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>([]);
+  const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
 
   useEffect(() => {
     // Use cached prayer data — avoids a redundant API call if already fetched today
@@ -28,16 +37,66 @@ export default function Home() {
     });
 
     // Fetch the next 2 upcoming events from Supabase
-    supabase
-      .from('events')
-      .select('id, title, event_date, type')
-      .eq('is_active', true)
-      .gte('event_date', new Date().toISOString().split('T')[0])
-      .order('event_date', { ascending: true })
-      .limit(2)
-      .then(({ data }) => {
+    (async () => {
+      try {
+        const client = getSupabase();
+        const todayISO = new Date().toISOString().split('T')[0];
+        const res = await client
+          .from('events')
+          .select('id, title, event_date, type')
+          .eq('is_active', true)
+          .gte('event_date', todayISO)
+          .order('event_date', { ascending: true })
+          .limit(2);
+        const data = res.data as UpcomingEvent[] | null;
         if (data) setUpcomingEvents(data);
-      });
+      } catch (e) {
+        console.error('Failed to fetch upcoming events', e);
+      }
+    })();
+
+    // Fetch Instagram feed events for the home page carousel
+    (async () => {
+      try {
+        const client = getSupabase();
+        const { data, error } = await client
+          .from('instagram_feed')
+          .select('id, caption, display_url, likes_count')
+          .order('created_at', { ascending: false })
+          .limit(6);
+        
+        if (error) throw error;
+        if (data) {
+          // Categorize the feed events based on keywords
+          const CLUSTERS = {
+            taraweeh: ['taraweeh', 'terawih', 'witir', 'qiyam', 'solat sunat', 'isyak'],
+            ceramah: ['ceramah', 'kuliah', 'tazkirah', 'ustaz', 'sharing', 'panel', 'ilmu'],
+            class: ['kelas', 'pengajian', 'tadabbur', 'bengkel', 'workshop', 'halaqah', 'belajar'],
+            community: ['iftar', 'berbuka', 'makan', 'rewang', 'gotong', 'sumbangan', 'sedekah']
+          };
+
+          const categorizedData = data.map((post: any) => {
+            const caption = post.caption?.toLowerCase() || '';
+            let type = 'general';
+            let maxScore = 0;
+
+            Object.entries(CLUSTERS).forEach(([category, keywords]) => {
+              const score = keywords.reduce((acc, word) => acc + (caption.includes(word) ? 1 : 0), 0);
+              if (score > maxScore) {
+                maxScore = score;
+                type = category;
+              }
+            });
+
+            return { ...post, type };
+          });
+
+          setFeedEvents(categorizedData);
+        }
+      } catch (e) {
+        console.error('Failed to fetch feed events', e);
+      }
+    })();
   }, []);
 
   // Immediately available from JS — no API needed
@@ -144,41 +203,57 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Events Teaser */}
+        {/* Feed Events Carousel */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg text-text-primary">Events</h2>
-            <Link to="/events" className="text-sm text-accent-primary flex items-center gap-1">
+            <h2 className="font-display text-lg text-text-primary">Mosque Updates</h2>
+            <Link to="/feed" className="text-sm text-accent-primary flex items-center gap-1">
               See All <ChevronRight size={16} />
             </Link>
           </div>
-          <div className="space-y-2">
-            {upcomingEvents.length > 0 ? (
-              upcomingEvents.map((event) => (
-                <div
+          {feedEvents.length > 0 ? (
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar snap-x">
+              {feedEvents.map((event) => (
+                <Link
                   key={event.id}
-                  className="flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color"
+                  to="/feed"
+                  className="flex-shrink-0 w-40 snap-start"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${
-                      event.type === 'taraweeh' ? 'bg-purple-500/20 text-purple-500' : 'bg-accent-warm/20 text-accent-warm'
-                    }`}>
-                      <Calendar size={18} />
+                  <div className="bg-bg-surface border border-border-color rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    {/* Poster Image */}
+                    <div className="aspect-square bg-bg-elevated overflow-hidden">
+                      <img 
+                        src={`https://images.weserv.nl/?url=${encodeURIComponent(event.display_url)}`} 
+                        alt="Feed post" 
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-                    <div>
-                      <p className="font-body font-medium text-text-primary">{event.title}</p>
-                      <p className="font-body text-xs text-text-secondary">
-                        {new Date(event.event_date).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    {/* Caption & Info */}
+                    <div className="p-3 space-y-2">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest ${
+                        event.type === 'taraweeh' ? 'bg-purple-500/20 text-purple-500' :
+                        event.type === 'ceramah' ? 'bg-orange-500/20 text-orange-500' :
+                        event.type === 'class' ? 'bg-teal-500/20 text-teal-500' :
+                        event.type === 'community' ? 'bg-green-500/20 text-green-500' :
+                        'bg-accent-primary/20 text-accent-primary'
+                      }`}>
+                        {event.type}
+                      </span>
+                      <p className="font-body text-xs text-text-secondary line-clamp-2">
+                        {event.caption?.substring(0, 60)}{event.caption && event.caption.length > 60 ? '...' : ''}
                       </p>
+                      <div className="flex items-center gap-1 text-text-muted">
+                        <Heart size={12} />
+                        <span className="text-[10px] font-medium">{event.likes_count}</span>
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight size={18} className="text-text-muted" />
-                </div>
-              ))
-            ) : (
-              <p className="font-body text-sm text-text-muted text-center py-4">No upcoming events</p>
-            )}
-          </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="font-body text-sm text-text-muted text-center py-4">No feed updates available</p>
+          )}
         </div>
 
         {/* KrackedDevs Promo */}

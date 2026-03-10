@@ -13,9 +13,7 @@ const getEnvVar = (name: string): string => {
   return value;
 };
 
-// Validate required environment variables at startup
-const SUPABASE_URL = getEnvVar('VITE_SUPABASE_URL');
-const SUPABASE_ANON_KEY = getEnvVar('VITE_SUPABASE_ANON_KEY');
+// Note: environment variables are validated lazily in createSupabaseClient
 
 // Security: List of allowed origins for CORS (configure in Supabase Dashboard)
 // Add your production domains to this list
@@ -107,7 +105,12 @@ export const supabase: any = new Proxy(
     get(_target, prop) {
       const client = getSupabase();
       // @ts-ignore
-      return (client as any)[prop];
+      const val = (client as any)[prop];
+      // If the property is a function, bind it to the real client so
+      // method calls keep the correct `this` context (prevents hung
+      // or misbehaving requests when methods are extracted).
+      if (typeof val === 'function') return val.bind(client);
+      return val;
     },
     set(_target, prop, value) {
       const client = getSupabase();
@@ -117,8 +120,14 @@ export const supabase: any = new Proxy(
     },
     apply(_target, thisArg, args) {
       const client = getSupabase();
+      // If proxy is called like a function, forward the call to the
+      // underlying client (ensure function is bound to client).
       // @ts-ignore
-      return (client as any).apply(thisArg, args);
+      const fn = (client as any).apply;
+      if (typeof fn === 'function') return fn.apply(client, args as any);
+      // Fallback: try directly invoking as a function
+      // @ts-ignore
+      return (client as any).apply?.(thisArg, args);
     },
   }
 );

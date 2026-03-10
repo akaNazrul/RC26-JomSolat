@@ -5,6 +5,7 @@ import { fetchPrayerTimes } from '@/lib/prayerTimes';
 import { buildUserObject } from '@/lib/user';
 import type { User, Theme } from '@/types';
 import type { PrayerTimeData } from '@/lib/prayerTimes';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface AppState {
   // Theme
@@ -112,7 +113,7 @@ export const useAppStore = create<AppState>()(
 
         // Persistent subscription — keeps store in sync for the lifetime of the page.
         // Handles token refresh, logout from another tab, OAuth sign-in, etc.
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
           if (event === 'SIGNED_OUT' || !session) {
             set({ user: null, isAuthenticated: false });
             return;

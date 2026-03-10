@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Clock, Building2, User, Rss } from 'lucide-react';
+import { Home, Clock, Building2, User, Rss, Sun, Moon } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 const navItems = [
@@ -44,5 +44,57 @@ function MobileNav() {
         </div>
       </div>
     </nav>
+  );
+}
+
+// Desktop placeholder (kept minimal for now)
+function DesktopNav() {
+  const { theme, toggleTheme } = useAppStore();
+
+  return (
+    <nav className="hidden md:flex fixed top-0 left-0 right-0 z-50 bg-bg-base/80 backdrop-blur-md border-b border-border-color">
+      <div className="w-full md:max-w-5xl md:mx-auto flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3">
+          <img src="/assets/v2-SVG.svg" alt="JomSolat" className="h-8 w-auto" />
+        </div>
+
+        <div className="flex items-center gap-4">
+          {navItems.map(({ to, icon: Icon, label }) => (
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2 rounded-xl transition-colors ${
+                  isActive ? 'text-accent-warm' : 'text-text-secondary hover:text-text-primary'
+                }`
+              }
+            >
+              <Icon size={18} />
+              <span className="text-sm hidden lg:inline">{label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-full bg-bg-elevated/60 hover:bg-bg-elevated text-text-primary border border-border-color"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// Export a default Navbar that composes mobile + desktop variants
+export default function Navbar() {
+  return (
+    <>
+      <MobileNav />
+      <DesktopNav />
+    </>
   );
 }

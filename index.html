@@ -51,10 +51,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Poppins:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
     
     <!-- Prevent theme flicker - must be in head before React loads -->
-    <!-- Organization structured data (helps SEO rich results) -->
-    <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"Organization","name":"JomSolat","url":"https://rc26-jomsolat.vercel.app","logo":"https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg"}
-    </script>
 
     <!-- LocalBusiness / Place structured data for Masjid Al-Malik Khalid -->
     <script type="application/ld+json">
@@ -74,6 +70,55 @@
         },
         "geo": { "@type": "GeoCoordinates", "latitude": 5.353702294625012, "longitude": 100.29939657438402 },
         "openingHours": "Mo-Su 05:00-22:00"
+      }
+    </script>
+
+    <!-- Site navigation JSON-LD to help surface sitelinks -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://rc26-jomsolat.vercel.app/#organization",
+            "name": "JomSolat",
+            "url": "https://rc26-jomsolat.vercel.app/",
+            "logo": "https://rc26-jomsolat.vercel.app/assets/jomSolat-logo-noBg.svg",
+            "sameAs": [
+              "https://www.facebook.com/yourpage",
+              "https://twitter.com/yourhandle",
+              "https://instagram.com/yourhandle"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://rc26-jomsolat.vercel.app/#website",
+            "url": "https://rc26-jomsolat.vercel.app/",
+            "name": "JomSolat",
+            "publisher": { "@id": "https://rc26-jomsolat.vercel.app/#organization" },
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://rc26-jomsolat.vercel.app/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "SiteNavigationElement",
+            "name": "Main navigation",
+            "hasPart": [
+              { "@type": "WebPage", "name": "Home", "url": "https://rc26-jomsolat.vercel.app/" },
+              { "@type": "WebPage", "name": "Learn More", "url": "https://rc26-jomsolat.vercel.app/landing" },
+              { "@type": "WebPage", "name": "Prayer Times", "url": "https://rc26-jomsolat.vercel.app/prayer-times" },
+              { "@type": "WebPage", "name": "Mosque Info", "url": "https://rc26-jomsolat.vercel.app/mosque-info" },
+              { "@type": "WebPage", "name": "Facilities", "url": "https://rc26-jomsolat.vercel.app/facilities" },
+              { "@type": "WebPage", "name": "Parking", "url": "https://rc26-jomsolat.vercel.app/parking" },
+              { "@type": "WebPage", "name": "Feed", "url": "https://rc26-jomsolat.vercel.app/feed" },
+              { "@type": "WebPage", "name": "Log In", "url": "https://rc26-jomsolat.vercel.app/login" },
+              { "@type": "WebPage", "name": "Sign Up", "url": "https://rc26-jomsolat.vercel.app/signup" },
+              { "@type": "WebPage", "name": "Profile", "url": "https://rc26-jomsolat.vercel.app/profile" }
+            ]
+          }
+        ]
       }
     </script>
 

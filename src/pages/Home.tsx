@@ -113,7 +113,7 @@ export default function Home() {
     { to: '/mosque-info', icon: Building2, label: 'Mosque Info', color: 'bg-accent-primary/20 text-accent-primary' },
     { to: '/facilities', icon: Waves, label: 'Facilities', color: 'bg-blue-500/20 text-blue-500' },
     { to: '/parking', icon: Car, label: 'Parking', color: 'bg-green-500/20 text-green-500' },
-    { to: '/events', icon: Calendar, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
+    { to: '/feed', icon: Calendar, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
   ];
 
   return (

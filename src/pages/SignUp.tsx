@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
+import { pickOAuthRedirect } from '@/lib/oauthRedirect';
 import { validatePassword, validateInput } from '@/lib/security';
 
 // Prayer zone is fixed to USM Induk / Gelugor — all users are part of this community
@@ -118,24 +119,28 @@ export default function SignUp() {
     setError('');
     
     try {
+      const origin = window.location.origin;
+      const redirectTo = pickOAuthRedirect(origin, navigator.userAgent);
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
           queryParams: { 
             prompt: 'select_account',
           },
         },
       });
       if (authError) {
-        setError(authError.message);
+        setError(authError.message || 'Failed to create account. Please try again.');
         setIsLoading(false);
+        return;
       }
     } catch (err) {
       setError('Failed to sign up with Google');
       setIsLoading(false);
     }
   };
+ 
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col">
@@ -291,5 +296,5 @@ export default function SignUp() {
       </div>
     </div>
   );
-}
+  }
 

@@ -3,14 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { supabase } from '@/lib/supabase';
+import { pickOAuthRedirect } from '@/lib/oauthRedirect';
 import { buildUserObject } from '@/lib/user';
 import { ClientRateLimiter, validateInput } from '@/lib/security';
 
-// Input max length constants
 const MAX_EMAIL_LENGTH = 255;
 const MAX_PASSWORD_LENGTH = 128;
 
-// Create rate limiter instance - 5 attempts per minute
 const loginLimiter = new ClientRateLimiter(5, 60000);
 
 export default function Login() {
@@ -27,14 +26,12 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    // Check rate limit before processing
     if (!loginLimiter.canMakeRequest(email)) {
       setError('Too many login attempts. Please try again in a minute.');
       setIsLoading(false);
       return;
     }
 
-    // Client-side validation
     if (!email.trim()) {
       setError('Please enter your email address');
       setIsLoading(false);
@@ -47,7 +44,6 @@ export default function Login() {
       return;
     }
 
-    // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
@@ -68,30 +64,28 @@ export default function Login() {
       }
 
       if (data.user) {
-        // Fetch user profile from public.users table
-        let profile = null;
         const { data: existingProfile, error: profileError } = await supabase
           .from('users')
           .select('*')
           .eq('id', data.user.id)
           .single();
 
+        let profile = null;
         if (profileError && profileError.code !== 'PGRST116') {
           console.error('Error fetching profile:', profileError);
         }
 
-        // If profile doesn't exist, create it
         if (!existingProfile) {
-          console.log('Profile not found during login, creating new profile...');
           try {
             const { data: newProfile, error: createProfileError } = await supabase
               .from('users')
               .insert({
                 id: data.user.id,
-                display_name: data.user.user_metadata?.display_name || 
-                              data.user.user_metadata?.full_name || 
-                              data.user.email?.split('@')[0] || 
-                              'User',
+                display_name:
+                  data.user.user_metadata?.display_name ||
+                  data.user.user_metadata?.full_name ||
+                  data.user.email?.split('@')[0] ||
+                  'User',
                 email: data.user.email || '',
                 zone: data.user.user_metadata?.zone || 'gelugor',
                 role: 'user',
@@ -104,7 +98,6 @@ export default function Login() {
               console.error('Error creating profile on login:', createProfileError);
             } else {
               profile = newProfile;
-              console.log('Profile created successfully on login:', profile);
             }
           } catch (err) {
             console.error('Unexpected error during profile creation on login:', err);
@@ -117,7 +110,6 @@ export default function Login() {
         navigate('/home');
       }
     } catch (err) {
-      // Generic error message for security
       setError('An unexpected error occurred. Please try again.');
       console.error('Login error:', err);
     } finally {
@@ -126,56 +118,45 @@ export default function Login() {
   };
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true);
     setError('');
-    
+    setIsLoading(true);
     try {
+      const origin = window.location.origin;
+      const redirectTo = pickOAuthRedirect(origin, navigator.userAgent);
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: { 
-            prompt: 'select_account',
-          },
+          redirectTo,
+          queryParams: { prompt: 'select_account' },
         },
       });
-      if (authError) {
-        setError(authError.message);
-        setIsLoading(false);
-      }
+      if (authError) setError(authError.message);
     } catch (err) {
       setError('Failed to sign in with Google');
+      console.error('Google sign-in error:', err);
+    } finally {
       setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col">
-      {/* Header */}
       <header className="p-4">
         <Link to="/" className="flex items-center gap-2">
-          <img
-            src="/assets/v2-SVG.svg"
-            alt="JomSolat"
-            className="h-10 w-auto"
-          />
+          <img src="/assets/v2-SVG.svg" alt="JomSolat" className="h-10 w-auto" />
         </Link>
       </header>
 
-      {/* Content */}
       <div className="flex-1 flex flex-col justify-center px-4 py-8">
         <div className="max-w-sm mx-auto w-full">
           <h1 className="font-display text-3xl text-text-primary mb-2">Welcome Back</h1>
-          <p className="font-body text-text-secondary mb-8">Sign in to continue to JomSolat</p>
+          <p className="font-body text-text-secondary mb-8">Sign in to continue</p>
 
           {error && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">
-              {error}
-            </div>
+            <div className="mb-4 p-3 rounded-lg bg-red-500/20 text-red-400 text-sm">{error}</div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
               <label htmlFor="login-email" className="block font-body text-sm text-text-secondary mb-2">Email</label>
               <div className="relative">
@@ -193,14 +174,8 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label htmlFor="login-password" className="font-body text-sm text-text-secondary">Password</label>
-                <Link to="/forgot-password" className="font-body text-sm text-accent-primary">
-                  Forgot Password?
-                </Link>
-              </div>
+              <label htmlFor="login-password" className="block font-body text-sm text-text-secondary mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={20} />
                 <input
@@ -208,32 +183,22 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(validateInput(e.target.value, MAX_PASSWORD_LENGTH))}
-                  placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                  placeholder="••••••••"
                   autoComplete="current-password"
                   maxLength={MAX_PASSWORD_LENGTH}
                   className="w-full pl-10 pr-12 py-3 rounded-xl bg-bg-surface border border-border-color text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary"
-                >
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary">
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-accent-warm text-white font-body font-semibold hover:bg-accent-warm/90 transition-colors disabled:opacity-50"
-            >
-              {isLoading ? 'Signing in...' : 'Log In'}
+            <button type="submit" disabled={isLoading} className="w-full py-3 rounded-xl bg-accent-warm text-white font-body font-semibold hover:bg-accent-warm/90 transition-colors disabled:opacity-50">
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border-color" />
@@ -243,14 +208,8 @@ export default function Login() {
             </div>
           </div>
 
-          {/* OAuth Buttons */}
           <div className="space-y-3">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-white border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
+            <button type="button" onClick={handleGoogleLogin} disabled={isLoading} className="w-full py-3 rounded-xl bg-white border border-gray-300 flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors disabled:opacity-50">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -261,16 +220,12 @@ export default function Login() {
             </button>
           </div>
 
-          {/* Sign Up Link */}
           <p className="mt-8 text-center font-body text-sm text-text-secondary">
             Don't have an account?{' '}
-            <Link to="/signup" className="text-accent-primary font-semibold">
-              Sign Up
-            </Link>
+            <Link to="/signup" className="text-accent-primary font-semibold">Create account</Link>
           </p>
         </div>
       </div>
     </div>
   );
 }
-

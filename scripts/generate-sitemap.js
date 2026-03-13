@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'fs';
-const base = 'https://rc26-jomsolat.vercel.app';
+const base = 'https://jomsolat.app';
 const pages = [
   '/',
   '/landing',

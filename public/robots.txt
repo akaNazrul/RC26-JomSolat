@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://rc26-jomsolat.vercel.app/sitemap.xml
+Sitemap: https://jomsolat.app/sitemap.xml

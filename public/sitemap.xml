@@ -1,39 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/</loc>
-    <priority>1.00</priority>
+    <loc>https://jomsolat.app/</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/prayer-times</loc>
-    <priority>0.80</priority>
+    <loc>https://jomsolat.app/landing</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/mosque-info</loc>
-    <priority>0.80</priority>
+    <loc>https://jomsolat.app/home</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/facilities</loc>
-    <priority>0.70</priority>
+    <loc>https://jomsolat.app/prayer-times</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/parking</loc>
-    <priority>0.70</priority>
+    <loc>https://jomsolat.app/mosque-info</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/feed</loc>
-    <priority>0.65</priority>
+    <loc>https://jomsolat.app/facilities</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/profile</loc>
-    <priority>0.60</priority>
+    <loc>https://jomsolat.app/parking</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/login</loc>
-    <priority>0.50</priority>
+    <loc>https://jomsolat.app/feed</loc>
   </url>
   <url>
-    <loc>https://rc26-jomsolat.vercel.app/signup</loc>
-    <priority>0.50</priority>
+    <loc>https://jomsolat.app/profile</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/account-settings</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/admin-dashboard</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/login</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/signup</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/forgot-password</loc>
+  </url>
+  <url>
+    <loc>https://jomsolat.app/reset-password</loc>
   </url>
 </urlset>

@@ -1,0 +1,18 @@
+{
+  "redirects": [
+    {
+      "source": "\\/(.*)",
+      "has": [
+        { "type": "host", "value": "rc26-jomsolat.vercel.app" }
+      ],
+      "destination": "https://jomsolat.app/$1",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "\\/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -25,34 +25,47 @@ async function fetchQiblaFromAPI(lat: number, lng: number): Promise<number | nul
 
 // Utility: Request motion/orientation permission (iOS 13+, Android)
 async function requestMotionPermission(): Promise<boolean> {
+  console.log('🔔 Attempting to request motion/orientation permission...');
+  
   if (typeof DeviceOrientationEvent === 'undefined') {
-    console.log('❌ DeviceOrientationEvent not supported');
+    console.error('❌ DeviceOrientationEvent not defined on this browser');
     return false;
   }
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
 
-  if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
-    // iOS 13+ or Android (Chrome 91+): explicit permission required
-    try {
-      console.log(`📱 Requesting motion permission on ${isIOS ? 'iOS' : isAndroid ? 'Android' : 'device'}...`);
+  try {
+    // Check if requestPermission exists
+    const hasRequestPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
+    console.log(`📱 Platform: ${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Other'}`);
+    console.log(`📱 Has requestPermission: ${hasRequestPermission}`);
+
+    if (hasRequestPermission) {
+      // iOS 13+ or Android (Chrome 91+): explicit permission request
+      console.log('🔔 Calling DeviceOrientationEvent.requestPermission()...');
       const permissionState = await (DeviceOrientationEvent as any).requestPermission();
-      console.log(`✓ Motion permission state: ${permissionState}`);
-      return permissionState === 'granted';
-    } catch (error) {
-      console.error('❌ Motion permission error:', error);
-      return false;
+      console.log(`✓ Permission response: ${permissionState}`);
+      
+      if (permissionState === 'granted') {
+        console.log('✅ Motion permission GRANTED');
+        return true;
+      } else if (permissionState === 'denied') {
+        console.warn('⛔ Motion permission DENIED by user');
+        return false;
+      } else {
+        console.log('❓ Motion permission status:', permissionState);
+        return false;
+      }
+    } else {
+      console.log('ℹ️ No explicit permission API. Permission is implicit or from system settings.');
+      return true; // Assume granted on older browsers or implicit permission systems
     }
-  } else if (isAndroid) {
-    // Android without explicit requestPermission: permission is implicit
-    // but we should still notify the user
-    console.log('ℹ Android motion permission: implicit (will prompt on first deviceorientation event)');
-    return true;
-  } else {
-    // Desktop or older browsers: permission is implicit
-    console.log('ℹ Motion permission implicit (non-mobile or older browser)');
-    return true;
+  } catch (error: any) {
+    console.error('❌ Motion permission error:', error);
+    console.error('Error name:', error?.name);
+    console.error('Error message:', error?.message);
+    return false;
   }
 }
 
@@ -70,6 +83,7 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
   const smoothedRef = useRef(0);
   const [displayedQibla, setDisplayedQibla] = useState(0);
   const [motionPermissionDenied, setMotionPermissionDenied] = useState(false);
+  const [requestingMotion, setRequestingMotion] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Detect if running on mobile/Android
@@ -79,15 +93,25 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
 
   // Request motion permission after location is obtained
   const requestMotionAfterLocation = async () => {
-    console.log('� Requesting motion/orientation permission...');
+    console.log('🔔 [requestMotionAfterLocation] Starting motion permission request...');
+    setRequestingMotion(true);
+    
     const motionGranted = await requestMotionPermission();
+    
+    setRequestingMotion(false);
     if (motionGranted) {
-      console.log('✓ Motion permission granted - arrow will move dynamically');
+      console.log('✅ [requestMotionAfterLocation] Motion permission GRANTED - arrow will move dynamically');
       setMotionPermissionDenied(false);
     } else {
-      console.warn('⚠ Motion permission denied - arrow will not update with device rotation');
+      console.warn('⛔ [requestMotionAfterLocation] Motion permission DENIED or unavailable');
       setMotionPermissionDenied(true);
     }
+  };
+
+  // Manual trigger for motion permission (user can click button if auto-request doesn't work)
+  const handleRequestMotionManually = async () => {
+    console.log('👆 [handleRequestMotionManually] User manually requesting motion permission');
+    await requestMotionAfterLocation();
   };
 
   // Calculate Qibla bearing from user lat/lng to Kaaba
@@ -128,9 +152,10 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         setLocationError('');
         setIsLoading(false);
         
-        // Request motion permission after location is obtained (for dynamic arrow)
-        // Uses small delay to ensure location success is fully processed
-        setTimeout(() => requestMotionAfterLocation(), 100);
+        // Request motion permission IMMEDIATELY after location obtained (preserve gesture context)
+        // CRITICAL: Do NOT use setTimeout - it breaks the user gesture context needed for permission prompt
+        console.log('🔄 Location obtained - requesting motion permission NOW (preserving gesture context)');
+        await requestMotionAfterLocation();
       },
       async (error) => {
         console.log('✗ Geolocation error code:', error.code, 'message:', error.message);
@@ -210,8 +235,9 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       setIsLoading(false);
       setShowManualInput(false);
       
-      // Request motion permission after location is set
-      setTimeout(() => requestMotionAfterLocation(), 100);
+      // Request motion permission IMMEDIATELY after location set (preserve gesture context)
+      console.log('🔄 Manual location set - requesting motion permission NOW');
+      await requestMotionAfterLocation();
     } catch (err) {
       console.error('Manual location error:', err);
       setLocationError('Error calculating Qibla direction');
@@ -500,9 +526,18 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       )}
 
       {userLocation && motionPermissionDenied && (
-        <p className="text-xs text-red-600 mt-2 text-center font-medium">
-          {isAndroid() ? '⚠ Go to Settings → Apps → Permissions → Motion & Fitness to enable' : '⚠ Allow motion permission in browser settings for dynamic arrow'}
-        </p>
+        <div className="mt-2 text-center">
+          <p className="text-xs text-red-600 font-medium mb-2">
+            {isAndroid() ? '⚠ Go to Settings → Apps → Permissions → Motion & Fitness to enable' : '⚠ Allow motion permission in browser settings for dynamic arrow'}
+          </p>
+          <button
+            onClick={handleRequestMotionManually}
+            disabled={requestingMotion}
+            className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded transition-colors"
+          >
+            {requestingMotion ? '🔔 Requesting...' : '🔔 Request Motion Permission'}
+          </button>
+        </div>
       )}
     </div>
   );

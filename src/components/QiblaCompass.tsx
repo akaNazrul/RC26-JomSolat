@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Locate, RotateCw, MapPin } from 'lucide-react';
+import { Locate, RotateCw, MapPin } from 'lucide-react';
 
 const KAABA_LAT = 21.4225;
 const KAABA_LNG = 39.8262;
@@ -30,7 +30,6 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
   const [isCalibrated, setIsCalibrated] = useState(false);
   const [userLocation, setUserLocation] = useState<{lat: number; lng: number} | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [requestAttempts, setRequestAttempts] = useState(0);
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualLat, setManualLat] = useState('5.3414');
   const [manualLng, setManualLng] = useState('100.3048');
@@ -76,7 +75,6 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         setQiblaDirection(normalizedDirection);
         setLocationError('');
         setIsLoading(false);
-        setRequestAttempts(0);
       },
       async (error) => {
         console.log('✗ Geolocation error code:', error.code, 'message:', error.message);
@@ -93,7 +91,6 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
             setQiblaDirection(apiQibla);
             setLocationError('Using default Gelugor location • Allow location for precise direction');
             setIsLoading(false);
-            setRequestAttempts(prev => prev + 1);
             return;
           }
         } catch (apiError) {
@@ -115,7 +112,6 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         }
         
         setLocationError(errorMessage);
-        setRequestAttempts(prev => prev + 1);
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 3 * 60 * 1000 }
     );
@@ -158,10 +154,10 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       setDeviceOrientation(alpha);
     };
 
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+    if ('requestPermission' in DeviceOrientationEvent) {
       // iOS 13+
-      DeviceOrientationEvent.requestPermission()
-        .then((permissionState) => {
+      (DeviceOrientationEvent as any).requestPermission()
+        .then((permissionState: PermissionState) => {
           if (permissionState === 'granted') {
             window.addEventListener('deviceorientation', handleOrientation);
             setIsCalibrated(true);
@@ -242,7 +238,7 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
     ctx.restore();
   }, [displayedQibla, smoothedOrientation]);
 
-  const rotation = deviceOrientation - qiblaDirection;
+  // const rotation = deviceOrientation - qiblaDirection; // unused
 
   // Guidance text for alignment: compute shortest difference (−180..180)
   const ALIGN_THRESHOLD = 8; // degrees tolerance for "found"

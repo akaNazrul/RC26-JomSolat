@@ -268,12 +268,15 @@ export default function Landing() {
 
           {/* KrackedDevs Promo */}
           <div className="mt-12 pt-8 border-t border-border-color">
-            <p className="text-xs text-text-muted mb-2">
-              Built during Ramadan 2026 as part of Kracked Devs RC26
-            </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-primary/20">
+            <a
+              href="https://discord.gg/yNrgex98"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-primary/20 hover:bg-accent-primary/30 transition-colors"
+            >
+              <img src="/assets/kdlogodev.svg" alt="KrackedDevs" className="h-4 w-auto text-accent-primary" />
               <span className="text-sm font-body font-medium text-accent-primary">KrackedDevs RC26</span>
-            </div>
+            </a>
           </div>
 
           <p className="mt-8 text-xs text-text-muted">

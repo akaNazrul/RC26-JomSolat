@@ -149,7 +149,7 @@ export const PRAYER_ORDER = [
   { key: 'dhuhr', name: 'Dhuhr', nameAr: 'الظهر', nameTransliterated: 'Zuhur', label: 'Zuhur' },
   { key: 'asr', name: 'Asr', nameAr: 'العصر', nameTransliterated: 'Asar', label: 'Asar' },
   { key: 'maghrib', name: 'Maghrib', nameAr: 'المغرب', nameTransliterated: 'Maghrib', label: 'Maghrib' },
-  { key: 'isha', name: 'Isha', nameAr: 'العشاء', nameTransliterated: 'Isyak', label: 'Isya' },
+  { key: 'isha', name: 'Isha', nameAr: 'العشاء', nameTransliterated: 'Isyak', label: 'Isyak' },
 ] as const;
 
 export type PrayerKey = typeof PRAYER_ORDER[number]['key'];

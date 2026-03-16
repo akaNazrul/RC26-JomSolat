@@ -136,8 +136,7 @@ export default function PrayerTimesPage() {
                     <div className="w-1 h-10 rounded-full bg-accent-warm" />
                   )}
                 <div>
-                  <p className="font-display text-sm md:text-base text-text-primary">{prayer.nameTransliterated}</p>
-                    <p className="font-body text-sm md:text-base text-text-secondary">{prayer.label}</p>
+                  <p className="font-display text-lg md:text-xl font-semibold text-text-primary">{prayer.nameTransliterated}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -155,10 +154,9 @@ export default function PrayerTimesPage() {
 {/* Sunrise */}
         <div className="flex items-center justify-between p-4 rounded-xl bg-bg-surface border border-border-color">
           <div>
-            <p className="font-body text-xs text-text-secondary">Sunrise</p>
-            <p className="font-display text-sm md:text-base text-text-primary">Sunrise</p>
+<p className="font-display text-lg md:text-xl font-semibold text-text-primary">Sunrise</p>
           </div>
-          <span className="font-body text-sm md:text-base text-text-muted">
+          <span className="font-body text-sm md:text-base text-text-primary">
             {prayerTimes?.sunrise ? formatTime(prayerTimes.sunrise) : '--:--'}
           </span>
         </div>

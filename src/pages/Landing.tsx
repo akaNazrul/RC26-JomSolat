@@ -259,10 +259,10 @@ export default function Landing() {
               Create Free Account
             </Link>
             <Link
-              to="/mosque-info"
+              to="/login"
               className="py-4 px-8 rounded-full border border-text-secondary/30 text-text-primary font-body font-medium hover:bg-bg-base/50 transition-colors"
             >
-              Learn More
+              Log In
             </Link>
           </div>
 
@@ -287,4 +287,3 @@ export default function Landing() {
     </div>
   );
 }
-

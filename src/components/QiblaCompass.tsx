@@ -23,6 +23,39 @@ async function fetchQiblaFromAPI(lat: number, lng: number): Promise<number | nul
   }
 }
 
+// Utility: Request motion/orientation permission (iOS 13+, Android)
+async function requestMotionPermission(): Promise<boolean> {
+  if (typeof DeviceOrientationEvent === 'undefined') {
+    console.log('❌ DeviceOrientationEvent not supported');
+    return false;
+  }
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+
+  if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+    // iOS 13+ or Android (Chrome 91+): explicit permission required
+    try {
+      console.log(`📱 Requesting motion permission on ${isIOS ? 'iOS' : isAndroid ? 'Android' : 'device'}...`);
+      const permissionState = await (DeviceOrientationEvent as any).requestPermission();
+      console.log(`✓ Motion permission state: ${permissionState}`);
+      return permissionState === 'granted';
+    } catch (error) {
+      console.error('❌ Motion permission error:', error);
+      return false;
+    }
+  } else if (isAndroid) {
+    // Android without explicit requestPermission: permission is implicit
+    // but we should still notify the user
+    console.log('ℹ Android motion permission: implicit (will prompt on first deviceorientation event)');
+    return true;
+  } else {
+    // Desktop or older browsers: permission is implicit
+    console.log('ℹ Motion permission implicit (non-mobile or older browser)');
+    return true;
+  }
+}
+
 export default function QiblaCompass(_props: QiblaCompassProps) {
   const [locationError, setLocationError] = useState('');
   const [qiblaDirection, setQiblaDirection] = useState(0);
@@ -36,7 +69,26 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
   const [smoothedOrientation, setSmoothedOrientation] = useState(0);
   const smoothedRef = useRef(0);
   const [displayedQibla, setDisplayedQibla] = useState(0);
+  const [motionPermissionDenied, setMotionPermissionDenied] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Detect if running on mobile/Android
+  const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isAndroid = () => /Android/.test(navigator.userAgent);
+  const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  // Request motion permission after location is obtained
+  const requestMotionAfterLocation = async () => {
+    console.log('� Requesting motion/orientation permission...');
+    const motionGranted = await requestMotionPermission();
+    if (motionGranted) {
+      console.log('✓ Motion permission granted - arrow will move dynamically');
+      setMotionPermissionDenied(false);
+    } else {
+      console.warn('⚠ Motion permission denied - arrow will not update with device rotation');
+      setMotionPermissionDenied(true);
+    }
+  };
 
   // Calculate Qibla bearing from user lat/lng to Kaaba
   const calculateQiblaDirection = (lat: number, lng: number) => {
@@ -75,9 +127,14 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         setQiblaDirection(normalizedDirection);
         setLocationError('');
         setIsLoading(false);
+        
+        // Request motion permission after location is obtained (for dynamic arrow)
+        // Uses small delay to ensure location success is fully processed
+        setTimeout(() => requestMotionAfterLocation(), 100);
       },
       async (error) => {
         console.log('✗ Geolocation error code:', error.code, 'message:', error.message);
+        setIsLoading(false);
         
         // Fallback to Aladhan API with default Gelugor location
         console.log('⏭ Falling back to Aladhan API with default location...');
@@ -89,7 +146,15 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
           if (apiQibla !== null) {
             setUserLocation({ lat: defaultLat, lng: defaultLng });
             setQiblaDirection(apiQibla);
-            setLocationError('Using default Gelugor location • Allow location for precise direction');
+            
+            if (error.code === error.PERMISSION_DENIED) {
+              const platformMsg = isAndroid() 
+                ? 'Using default location • Go to Android Settings → Apps → Permissions → Location to enable'
+                : 'Using default location • Check browser location permission in settings';
+              setLocationError(platformMsg);
+            } else {
+              setLocationError('Using default Gelugor location • Try again for precise direction');
+            }
             setIsLoading(false);
             return;
           }
@@ -102,11 +167,15 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         let errorMessage = '';
         
         if (error.code === error.PERMISSION_DENIED) {
-          errorMessage = 'Location access denied. Cannot calculate Qibla direction without your location.';
+          errorMessage = isAndroid()
+            ? '❌ Location denied. Go to Settings → Apps → Permissions → Location to enable'
+            : '❌ Location access denied. Enable location permission in browser settings';
         } else if (error.code === error.POSITION_UNAVAILABLE) {
-          errorMessage = 'Location unavailable. Please check your GPS or try again.';
+          errorMessage = isAndroid()
+            ? 'GPS unavailable. Check device location settings or try indoors near a window'
+            : 'Location unavailable. Enable GPS and try again';
         } else if (error.code === error.TIMEOUT) {
-          errorMessage = 'Location request timed out. Please try again or check your GPS.';
+          errorMessage = 'Location request timed out. Check GPS signal and try again';
         } else {
           errorMessage = 'Could not get location. Please try again.';
         }
@@ -140,6 +209,9 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       setQiblaDirection(normalizedDirection);
       setIsLoading(false);
       setShowManualInput(false);
+      
+      // Request motion permission after location is set
+      setTimeout(() => requestMotionAfterLocation(), 100);
     } catch (err) {
       console.error('Manual location error:', err);
       setLocationError('Error calculating Qibla direction');
@@ -154,21 +226,14 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       setDeviceOrientation(alpha);
     };
 
-    if ('requestPermission' in DeviceOrientationEvent) {
-      // iOS 13+
-      (DeviceOrientationEvent as any).requestPermission()
-        .then((permissionState: PermissionState) => {
-          if (permissionState === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation);
-            setIsCalibrated(true);
-          }
-        })
-        .catch(console.error);
-    } else {
-      // Non-iOS
-      window.addEventListener('deviceorientation', handleOrientation);
-      setIsCalibrated(true);
-    }
+    // Register listener for device orientation
+    // Permission will be explicitly requested when user clicks "Get Location"
+    window.addEventListener('deviceorientation', handleOrientation);
+    setIsCalibrated(true);
+
+    // Log platform info for debugging
+    console.log(`🔧 Qibla Compass initialized on ${isAndroid() ? 'Android' : isIOS() ? 'iOS' : 'Desktop'}`);
+    console.log('ℹ Will request: 1) Location permission, 2) Motion permission');
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
@@ -305,7 +370,9 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       <div className="text-center mb-6">
         <h2 className="font-display text-xl text-gray-800 mb-1">Qibla Direction</h2>
         <p className="text-sm text-gray-600">
-          {userLocation ? 'Point device camera lens toward green arrow' : 'Tap "Get Location" to find your Qibla direction'}
+          {userLocation 
+            ? (isMobileDevice() ? 'Rotate device to move arrow toward Qibla' : 'Point device camera lens toward green arrow')
+            : (isMobileDevice() ? 'Tap "Get Location" for dynamic compass' : 'Tap "Get Location" to find your Qibla direction')}
         </p>
       </div>
 
@@ -423,6 +490,18 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       {!userLocation && !locationError && (
         <p className="text-xs text-gray-500 mt-4 text-center">
           Click "Get Location" to enable Qibla direction. Requires location permission.
+        </p>
+      )}
+
+      {userLocation && !isCalibrated && (
+        <p className="text-xs text-amber-600 mt-3 text-center font-medium">
+          {isAndroid() ? '📱 Enable "Motion" in Android settings for dynamic arrow' : '📱 Enable motion permission when prompted'}
+        </p>
+      )}
+
+      {userLocation && motionPermissionDenied && (
+        <p className="text-xs text-red-600 mt-2 text-center font-medium">
+          {isAndroid() ? '⚠ Go to Settings → Apps → Permissions → Motion & Fitness to enable' : '⚠ Allow motion permission in browser settings for dynamic arrow'}
         </p>
       )}
     </div>

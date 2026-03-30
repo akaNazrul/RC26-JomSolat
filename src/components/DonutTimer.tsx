@@ -133,4 +133,3 @@ export default function DonutTimer({ prayerTimes }: DonutTimerProps) {
     </div>
   );
 }
-

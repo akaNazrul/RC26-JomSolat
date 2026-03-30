@@ -188,7 +188,7 @@ export default function Home() {
                       : 'bg-bg-surface text-text-primary border border-border-color'
                   }`}
                 >
-<span className="font-display text-[10px] md:text-xs block mb-1">{prayer.nameTransliterated}</span>
+                  <span className="font-display text-[10px] md:text-xs block mb-1">{prayer.nameTransliterated}</span>
                   <span className="font-body text-sm md:text-base font-medium">
                     {prayerTimes ? formatTime(prayerTimes[prayer.key as keyof PrayerTimeData] as string) : '--:--'}
                   </span>
@@ -312,4 +312,3 @@ export default function Home() {
     </div>
   );
 }
-

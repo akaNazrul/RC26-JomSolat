@@ -55,7 +55,7 @@ const Feedpage: React.FC = () => {
     }
   }, []);
 
-  // 🧠 THE INTELLIGENT ENGINE: Mapping, Categorizing, and Scoring
+  // THE INTELLIGENT ENGINE: Mapping, Categorizing, and Scoring
   const processedData = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -95,7 +95,7 @@ const Feedpage: React.FC = () => {
     });
   }, [igData]);
 
-  // 🔍 Filtering Logic for Upcoming/Past & Categories
+  // Filtering Logic for Upcoming/Past & Categories
   const filteredFeed = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -115,7 +115,7 @@ const Feedpage: React.FC = () => {
     });
   }, [processedData, activeFilter, showUpcoming]);
 
-  // 📅 Calendar Highlighting Logic
+  // Calendar Highlighting Logic
   const eventDatesStrings = useMemo(() => {
     return processedData
       .filter(p => p.parsedDate)

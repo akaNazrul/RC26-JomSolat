@@ -82,15 +82,15 @@ export default function AccountSettings() {
         
         // Provide helpful error messages based on the error type
         if (uploadError.message.includes('bucket') || uploadError.message.includes('not found')) {
-          throw new Error('❌ Storage bucket "avatars" not found. Admin must create it in Supabase Dashboard → Storage');
+          throw new Error('Error: Storage bucket "avatars" not found. Admin must create it in Supabase Dashboard -> Storage');
         }
         if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
-          throw new Error('❌ Permission denied: Storage policies not configured correctly. Run the SQL migration from SUPABASE_SETUP.md');
+          throw new Error('Error: Permission denied: Storage policies not configured correctly. Run the SQL migration from SUPABASE_SETUP.md');
         }
         if (uploadError.message.includes('Unauthorized')) {
-          throw new Error('❌ Unauthorized: You need to be signed in to upload');
+          throw new Error('Error: Unauthorized: You need to be signed in to upload');
         }
-        throw new Error(`❌ Upload failed: ${uploadError.message}`);
+        throw new Error(`Error: Upload failed: ${uploadError.message}`);
       }
 
       setDebugInfo('Getting public URL...');
@@ -117,7 +117,7 @@ export default function AccountSettings() {
       const updatedUser = { ...user, avatar_url: publicUrl };
       setUser(updatedUser);
       
-      setSuccessMessage('✅ Profile picture updated successfully!');
+      setSuccessMessage('Profile picture updated successfully!');
       setDebugInfo('');
       
       // Reset file input
@@ -167,22 +167,22 @@ export default function AccountSettings() {
 
         // Provide helpful error messages based on the error type
         if (updateError.message.includes('infinite recursion')) {
-          throw new Error('❌ Policy error detected: Run the SQL migration from SUPABASE_SETUP.md to fix RLS policies');
+          throw new Error('Error: Policy error detected: Run the SQL migration from SUPABASE_SETUP.md to fix RLS policies');
         }
         if (updateError.message.includes('row-level security') || updateError.message.includes('policy')) {
-          throw new Error('❌ Permission denied: RLS policies not configured. Run the SQL migration from SUPABASE_SETUP.md');
+          throw new Error('Error: Permission denied: RLS policies not configured. Run the SQL migration from SUPABASE_SETUP.md');
         }
         if (updateError.message.includes('42501')) {
-          throw new Error('❌ Permission denied (42501): User row RLS policy missing or incorrect');
+          throw new Error('Error: Permission denied (42501): User row RLS policy missing or incorrect');
         }
-        throw new Error(`❌ Update failed: ${updateError.message}`);
+        throw new Error(`Error: Update failed: ${updateError.message}`);
       }
 
       // Update local state with new user object
       const updatedUser = { ...user, display_name: displayName.trim() };
       setUser(updatedUser);
       
-      setSuccessMessage('✅ Display name updated successfully!');
+      setSuccessMessage('Display name updated successfully!');
       setDebugInfo('');
       clearMessages();
     } catch (error) {
@@ -397,7 +397,7 @@ export default function AccountSettings() {
           >
             <span>Change Password</span>
             <span className="text-xs text-accent-warm opacity-0 group-hover:opacity-100 transition-opacity">
-              Click to send reset email →
+              Click to send reset email ->
             </span>
           </button>
           
@@ -448,4 +448,3 @@ export default function AccountSettings() {
     </div>
   );
 }
-

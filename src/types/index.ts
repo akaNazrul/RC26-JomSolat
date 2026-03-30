@@ -71,4 +71,3 @@ export interface Facility {
 }
 
 export type EventType = 'taraweeh' | 'ceramah' | 'class' | 'community' | 'all';
-

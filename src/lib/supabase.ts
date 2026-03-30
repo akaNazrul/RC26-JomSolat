@@ -262,4 +262,3 @@ export type Database = {
     };
   };
 };
-

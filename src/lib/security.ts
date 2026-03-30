@@ -1,14 +1,4 @@
 /**
- * Security Utilities
- * Provides input validation, sanitization, and security helpers
- */
-
-
-// ===========================================
-// Input Validation
-// ===========================================
-
-/**
  * Validate and sanitize string input with max length
  */
 export const validateInput = (input: string | undefined | null, maxLength: number = 255): string => {
@@ -88,13 +78,6 @@ export const truncateString = (str: string, maxLength: number): string => {
   return str.slice(0, maxLength - 3) + '...';
 };
 
-
-
-
-
-
-
-
 // ===========================================
 // Security Helpers
 // ===========================================
@@ -159,8 +142,8 @@ export const clearOAuthState = (): void => {
  */
 export const isSecureContext = (): boolean => {
   return window.location.protocol === 'https:' || 
-         window.location.hostname === 'localhost' ||
-         window.location.hostname === '127.0.0.1';
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
 };
 
 /**
@@ -379,4 +362,3 @@ export const security = {
 };
 
 export default security;
-

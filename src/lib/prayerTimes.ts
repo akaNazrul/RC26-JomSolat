@@ -228,4 +228,3 @@ export function formatTime(time: string): string {
   const h12 = h % 12 || 12;
   return `${h12}:${minutes} ${ampm}`;
 }
-

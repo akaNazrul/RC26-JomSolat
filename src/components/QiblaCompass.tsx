@@ -6,14 +6,14 @@ const KAABA_LNG = 39.8262;
 
 interface QiblaCompassProps {}
 
-// Utility: Fetch Qibla direction from Aladhan API
+// Utility: Fetch Qibla direction from Aladhan API  
 async function fetchQiblaFromAPI(lat: number, lng: number): Promise<number | null> {
   try {
     const response = await fetch(`https://api.aladhan.com/v1/qibla/${lat}/${lng}`);
     if (!response.ok) throw new Error('API request failed');
     const data = await response.json();
     if (data.code === 200 && data.data?.direction) {
-      console.log('✓ Qibla from API:', data.data.direction);
+      console.log('Qibla from API:', data.data.direction);
       return data.data.direction;
     }
     return null;
@@ -25,10 +25,10 @@ async function fetchQiblaFromAPI(lat: number, lng: number): Promise<number | nul
 
 // Utility: Request motion/orientation permission (iOS 13+, Android)
 async function requestMotionPermission(): Promise<boolean> {
-  console.log('🔔 Attempting to request motion/orientation permission...');
-  
+  console.log('Attempting to request motion/orientation permission...');
+
   if (typeof DeviceOrientationEvent === 'undefined') {
-    console.error('❌ DeviceOrientationEvent not defined on this browser');
+    console.error('DeviceOrientationEvent not defined on this browser');
     return false;
   }
 
@@ -38,31 +38,31 @@ async function requestMotionPermission(): Promise<boolean> {
   try {
     // Check if requestPermission exists
     const hasRequestPermission = typeof (DeviceOrientationEvent as any).requestPermission === 'function';
-    console.log(`📱 Platform: ${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Other'}`);
-    console.log(`📱 Has requestPermission: ${hasRequestPermission}`);
+    console.log(`Platform: ${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Other'}`);
+    console.log(`Has requestPermission: ${hasRequestPermission}`);
 
     if (hasRequestPermission) {
       // iOS 13+ or Android (Chrome 91+): explicit permission request
-      console.log('🔔 Calling DeviceOrientationEvent.requestPermission()...');
+      console.log('Calling DeviceOrientationEvent.requestPermission()...');
       const permissionState = await (DeviceOrientationEvent as any).requestPermission();
-      console.log(`✓ Permission response: ${permissionState}`);
-      
+      console.log(`Permission response: ${permissionState}`);
+
       if (permissionState === 'granted') {
-        console.log('✅ Motion permission GRANTED');
+        console.log('Motion permission granted');
         return true;
       } else if (permissionState === 'denied') {
-        console.warn('⛔ Motion permission DENIED by user');
+        console.warn('Motion permission denied by user');
         return false;
       } else {
-        console.log('❓ Motion permission status:', permissionState);
+        console.log('Motion permission status:', permissionState);
         return false;
       }
     } else {
-      console.log('ℹ️ No explicit permission API. Permission is implicit or from system settings.');
+      console.log('No explicit permission API. Permission may be implicit or managed by system settings.');
       return true; // Assume granted on older browsers or implicit permission systems
     }
   } catch (error: any) {
-    console.error('❌ Motion permission error:', error);
+    console.error('Motion permission error:', error);
     console.error('Error name:', error?.name);
     console.error('Error message:', error?.message);
     return false;
@@ -93,24 +93,24 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
 
   // Request motion permission after location is obtained
   const requestMotionAfterLocation = async () => {
-    console.log('🔔 [requestMotionAfterLocation] Starting motion permission request...');
-    setRequestingMotion(true);
-    
-    const motionGranted = await requestMotionPermission();
-    
-    setRequestingMotion(false);
-    if (motionGranted) {
-      console.log('✅ [requestMotionAfterLocation] Motion permission GRANTED - arrow will move dynamically');
-      setMotionPermissionDenied(false);
-    } else {
-      console.warn('⛔ [requestMotionAfterLocation] Motion permission DENIED or unavailable');
-      setMotionPermissionDenied(true);
-    }
+    console.log('[requestMotionAfterLocation] Starting motion permission request...');
+      setRequestingMotion(true);
+
+      const motionGranted = await requestMotionPermission();
+
+      setRequestingMotion(false);
+      if (motionGranted) {
+        console.log('[requestMotionAfterLocation] Motion permission granted - arrow will move dynamically');
+        setMotionPermissionDenied(false);
+      } else {
+        console.warn('[requestMotionAfterLocation] Motion permission denied or unavailable');
+        setMotionPermissionDenied(true);
+      }
   };
 
   // Manual trigger for motion permission (user can click button if auto-request doesn't work)
   const handleRequestMotionManually = async () => {
-    console.log('👆 [handleRequestMotionManually] User manually requesting motion permission');
+    console.log('[handleRequestMotionManually] User manually requesting motion permission');
     await requestMotionAfterLocation();
   };
 
@@ -140,29 +140,29 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
-        console.log('✓ Location obtained:', { latitude, longitude });
+          console.log('Location obtained:', { latitude, longitude });
         setUserLocation({ lat: latitude, lng: longitude });
         
         // Try math-based calculation first (faster, no API call)
         const direction = calculateQiblaDirection(latitude, longitude);
         const normalizedDirection = (direction + 360) % 360;
-        console.log('✓ Qibla from math:', normalizedDirection);
+        console.log('Qibla from math:', normalizedDirection);
         
         setQiblaDirection(normalizedDirection);
         setLocationError('');
         setIsLoading(false);
         
         // Request motion permission IMMEDIATELY after location obtained (preserve gesture context)
-        // CRITICAL: Do NOT use setTimeout - it breaks the user gesture context needed for permission prompt
-        console.log('🔄 Location obtained - requesting motion permission NOW (preserving gesture context)');
+        // Do not use setTimeout - it breaks the user gesture context needed for permission prompt
+        console.log('Location obtained - requesting motion permission now (preserving gesture context)');
         await requestMotionAfterLocation();
       },
       async (error) => {
-        console.log('✗ Geolocation error code:', error.code, 'message:', error.message);
+        console.log('Geolocation error code:', error.code, 'message:', error.message);
         setIsLoading(false);
         
         // Fallback to Aladhan API with default Gelugor location
-        console.log('⏭ Falling back to Aladhan API with default location...');
+        console.log('Falling back to Aladhan API with default location...');
         try {
           const defaultLat = 5.3414; // Gelugor, Penang
           const defaultLng = 100.3048;
@@ -174,11 +174,11 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
             
             if (error.code === error.PERMISSION_DENIED) {
               const platformMsg = isAndroid() 
-                ? 'Using default location • Go to Android Settings → Apps → Permissions → Location to enable'
-                : 'Using default location • Check browser location permission in settings';
+                ? 'Using default location - Go to Android Settings -> Apps -> Permissions -> Location to enable'
+                : 'Using default location - Check browser location permission in settings';
               setLocationError(platformMsg);
             } else {
-              setLocationError('Using default Gelugor location • Try again for precise direction');
+              setLocationError('Using default Gelugor location - Try again for precise direction');
             }
             setIsLoading(false);
             return;
@@ -193,8 +193,8 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
         
         if (error.code === error.PERMISSION_DENIED) {
           errorMessage = isAndroid()
-            ? '❌ Location denied. Go to Settings → Apps → Permissions → Location to enable'
-            : '❌ Location access denied. Enable location permission in browser settings';
+            ? 'Location denied. Go to Settings -> Apps -> Permissions -> Location to enable'
+            : 'Location access denied. Enable location permission in browser settings';
         } else if (error.code === error.POSITION_UNAVAILABLE) {
           errorMessage = isAndroid()
             ? 'GPS unavailable. Check device location settings or try indoors near a window'
@@ -228,7 +228,7 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       // Try math-based calculation first
       const direction = calculateQiblaDirection(lat, lng);
       const normalizedDirection = (direction + 360) % 360;
-      console.log('✓ Qibla (manual input):', normalizedDirection);
+      console.log('Qibla (manual input):', normalizedDirection);
 
       setUserLocation({ lat, lng });
       setQiblaDirection(normalizedDirection);
@@ -236,7 +236,7 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
       setShowManualInput(false);
       
       // Request motion permission IMMEDIATELY after location set (preserve gesture context)
-      console.log('🔄 Manual location set - requesting motion permission NOW');
+      console.log('Manual location set - requesting motion permission now');
       await requestMotionAfterLocation();
     } catch (err) {
       console.error('Manual location error:', err);
@@ -258,15 +258,24 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
     setIsCalibrated(true);
 
     // Log platform info for debugging
-    console.log(`🔧 Qibla Compass initialized on ${isAndroid() ? 'Android' : isIOS() ? 'iOS' : 'Desktop'}`);
-    console.log('ℹ Will request: 1) Location permission, 2) Motion permission');
+    console.log(`Qibla Compass initialized on ${isAndroid() ? 'Android' : isIOS() ? 'iOS' : 'Desktop'}`);
+    console.log('Will request: 1) Location permission, 2) Motion permission');
 
     return () => {
       window.removeEventListener('deviceorientation', handleOrientation);
     };
   }, []);
 
-  // Draw compass rose
+  // Preload Kaaba image for canvas rim marker
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/assets/kaaba.svg';
+    img.decode().catch(() => {});
+    // store on canvasRef for reuse in draw loop
+    (canvasRef as any)._kaabaImage = img;
+  }, []);
+
+  // Draw compass rose, user heading arrow, and Kaaba rim marker
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -276,58 +285,87 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
 
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = 140;
+    const radius = Math.min(canvas.width, canvas.height) / 2 - 10;
+    const drawRadius = radius - 18; // where rim markers sit
 
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Compass ring
+    // Draw outer ring
     ctx.save();
     ctx.translate(centerX, centerY);
-    // Use smoothed orientation and animated qibla for smoother visuals
-    ctx.rotate((-smoothedOrientation * Math.PI) / 180); // Rotate based on heading
-    ctx.rotate((displayedQibla * Math.PI) / 180); // Rotate so Qibla points up
-
-    // Outer circle
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 6;
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, 2 * Math.PI);
     ctx.stroke();
 
-    // Qibla arrow
-    ctx.fillStyle = '#10b981';
-    ctx.beginPath();
-    ctx.moveTo(0, -radius);
-    ctx.lineTo(-12, -radius + 30);
-    ctx.lineTo(12, -radius + 30);
-    ctx.closePath();
-    ctx.fill();
+    // Draw tick marks around rim
+    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#0f172a';
+    for (let i = 0; i < 360; i += 5) {
+      const ang = (i - 90) * (Math.PI / 180); // convert so 0 deg is top
+      const inner = drawRadius - (i % 30 === 0 ? 12 : 6);
+      const outer = drawRadius + 6;
+      const x1 = Math.cos(ang) * inner;
+      const y1 = Math.sin(ang) * inner;
+      const x2 = Math.cos(ang) * outer;
+      const y2 = Math.sin(ang) * outer;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
 
-    // N/S/E/W labels — offset so 0 radians maps to the top (North)
-    // Canvas 0 radians points to the right (East), so subtract PI/2 to rotate
-    // labels so that North appears at the top of the canvas.
-    const offset = -Math.PI / 2;
-    const labels = [
-      { angle: 0 + offset, label: 'N' },
-      { angle: Math.PI / 2 + offset, label: 'E' },
-      { angle: Math.PI + offset, label: 'S' },
-      { angle: (3 * Math.PI) / 2 + offset, label: 'W' },
-    ];
-
-    ctx.fillStyle = '#111827';
-    ctx.font = 'bold 20px sans-serif';
+    // Cardinal labels N/E/S/W
+    ctx.fillStyle = '#0f172a';
+    ctx.font = 'bold 18px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    const labelOffset = drawRadius - 36;
+    ctx.fillText('N', 0, -labelOffset);
+    ctx.fillText('E', labelOffset, 0);
+    ctx.fillText('S', 0, labelOffset);
+    ctx.fillText('W', -labelOffset, 0);
 
-    labels.forEach(({ angle, label }) => {
-      const x = Math.cos(angle) * (radius - 30);
-      const y = Math.sin(angle) * (radius - 30);
-      ctx.fillText(label, x, y);
-    });
+    // Draw Kaaba marker on rim at qiblaDirection (fixed world position)
+    try {
+      const angleRad = ((qiblaDirection - 90) * Math.PI) / 180; // convert to canvas rad
+      const kaabaX = Math.cos(angleRad) * drawRadius;
+      const kaabaY = Math.sin(angleRad) * drawRadius;
+
+      // Draw a small circle as fallback marker
+      ctx.fillStyle = '#b45309';
+      ctx.beginPath();
+      ctx.arc(kaabaX, kaabaY, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Try to draw Kaaba SVG image if loaded
+      const img = (canvasRef as any)._kaabaImage as HTMLImageElement | undefined;
+      if (img && img.complete) {
+        const w = 24;
+        const h = 24;
+        ctx.drawImage(img, kaabaX - w / 2, kaabaY - h / 2, w, h);
+      }
+    } catch (e) {
+      // ignore drawing errors
+    }
+
+    // Draw user heading arrow: rotate by smoothedOrientation so arrow points to where device faces
+    ctx.save();
+    ctx.rotate((smoothedOrientation * Math.PI) / 180);
+    // Arrow pointing up after rotation
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath();
+    ctx.moveTo(0, -10);
+    ctx.lineTo(-10, 14);
+    ctx.lineTo(10, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
 
     ctx.restore();
-  }, [displayedQibla, smoothedOrientation]);
+  }, [qiblaDirection, smoothedOrientation]);
 
   // const rotation = deviceOrientation - qiblaDirection; // unused
 
@@ -410,15 +448,10 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
           height={320}
           className="w-full h-full rounded-3xl shadow-2xl border-4 border-white/50"
         />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <img src="/assets/kaaba.svg" alt="Kaaba" className="w-10 h-10 mb-2 drop-shadow-lg" />
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600 mb-1">
-              {Math.round(userLocation ? qiblaDirection : 0)}°
-            </div>
-            <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
-              {userLocation ? 'Qibla Direction' : 'Magnetic North'}
-            </div>
+        <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
+          <div className="text-center mb-3 bg-white/70 px-3 py-1 rounded-md shadow-sm">
+            <div className="text-lg font-bold text-green-600">{Math.round(userLocation ? qiblaDirection : 0)}°</div>
+            <div className="text-xs text-gray-700 uppercase tracking-wide font-semibold">{userLocation ? 'Qibla Direction' : 'Magnetic North'}</div>
           </div>
         </div>
       </div>
@@ -509,8 +542,8 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
 
       {userLocation && (
         <p className="text-xs text-green-600 mt-3 text-center font-medium">
-          ✓ Location obtained • Accuracy ±2° | Works worldwide
-        </p>
+            Location obtained - Accuracy ±2° | Works worldwide
+          </p>
       )}
 
       {!userLocation && !locationError && (
@@ -521,25 +554,24 @@ export default function QiblaCompass(_props: QiblaCompassProps) {
 
       {userLocation && !isCalibrated && (
         <p className="text-xs text-amber-600 mt-3 text-center font-medium">
-          {isAndroid() ? '📱 Enable "Motion" in Android settings for dynamic arrow' : '📱 Enable motion permission when prompted'}
+          {isAndroid() ? 'Enable "Motion" in Android settings for dynamic arrow' : 'Enable motion permission when prompted'}
         </p>
       )}
 
       {userLocation && motionPermissionDenied && (
         <div className="mt-2 text-center">
-          <p className="text-xs text-red-600 font-medium mb-2">
-            {isAndroid() ? '⚠ Go to Settings → Apps → Permissions → Motion & Fitness to enable' : '⚠ Allow motion permission in browser settings for dynamic arrow'}
+            <p className="text-xs text-red-600 font-medium mb-2">
+            {isAndroid() ? 'Go to Settings -> Apps -> Permissions -> Motion & Fitness to enable' : 'Allow motion permission in browser settings for dynamic arrow'}
           </p>
           <button
             onClick={handleRequestMotionManually}
             disabled={requestingMotion}
             className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded transition-colors"
           >
-            {requestingMotion ? '🔔 Requesting...' : '🔔 Request Motion Permission'}
+            {requestingMotion ? 'Requesting...' : 'Request Motion Permission'}
           </button>
         </div>
       )}
     </div>
   );
 }
-

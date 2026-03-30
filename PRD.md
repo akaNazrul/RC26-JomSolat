@@ -124,7 +124,7 @@ accent-warm	#E65C00	CTAs, timer ring
 text-primary	#1A1A1A	Headings
 text-secondary	#4A4A4A	Subtitles
 border	#E0E0E0	Card borders
-⚠  Never hardcode hex values in component code. Always use CSS custom properties (--bg-base etc). This enables the dark/light toggle to work with a single class switch on <html>.
+WARNING: Never hardcode hex values in component code. Always use CSS custom properties (--bg-base etc). This enables the dark/light toggle to work with a single class switch on <html>.
 
 ▌ 3.3  Typography
 Role	Font Family	Weight	Size (mobile)	Usage
@@ -152,7 +152,7 @@ Library	Usage	License
 Lucide Icons (lucide.dev)	Primary UI icons (nav, actions, status)	ISC — open source
 Google Material Symbols	Supplementary (maps, settings, info)	Apache 2.0
 Flaticon (selected mosque icons)	Mosque-specific (minaret, prayer mat)	Free with attribution
-✔  Use only SVG icons. Never use icon fonts (causes layout shift). All icons must be imported as React components.
+Note: Use only SVG icons. Never use icon fonts (causes layout shift). All icons must be imported as React components.
 
 ▌ 3.6  Animation & Motion Design
 Motion in JomSolat is functional and spiritual — it should feel like gentle breathing, not a theme park. Every animation must serve a UX purpose.
@@ -167,7 +167,7 @@ Modal slide-up	320ms	ease-out	Trigger action	Context preservation
 Pull-to-refresh spin	400ms	linear loop	Pull gesture	Loading indicator
 Skeleton shimmer	1500ms	linear loop	Data loading	Perceived performance
 Dark/light mode toggle	400ms	ease-in-out	Toggle press	Smooth theme switch
-⚠  Respect prefers-reduced-motion media query. All animations must disable gracefully for accessibility.
+WARNING: Respect prefers-reduced-motion media query. All animations must disable gracefully for accessibility.
 
 ▌ 3.7  Component Inventory
 ATOMS
@@ -707,7 +707,7 @@ Verdict	✔ CHOSEN — better DX and SPA support	Backup option only
 •	Service role key (supabaseServiceKey) used ONLY in Edge Functions — never exposed to client
 •	Client uses anon key only — restricted by RLS
 •	All queries parameterised through supabase-js (no raw SQL injection risk)
-⚠  Never expose SUPABASE_SERVICE_ROLE_KEY in client-side code or public repos. Use .env and Vercel environment variables.
+WARNING: Never expose SUPABASE_SERVICE_ROLE_KEY in client-side code or public repos. Use .env and Vercel environment variables.
 
 ▌ 10.3  API Security
 •	Al-Adhan API called only from Edge Function (server-side), never from client

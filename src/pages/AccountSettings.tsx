@@ -397,7 +397,7 @@ export default function AccountSettings() {
           >
             <span>Change Password</span>
             <span className="text-xs text-accent-warm opacity-0 group-hover:opacity-100 transition-opacity">
-              Click to send reset email ->
+              Click to send reset email &rarr;
             </span>
           </button>
           

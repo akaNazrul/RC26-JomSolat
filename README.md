@@ -13,15 +13,9 @@
 
 ---
 
-## What is JomSolat?
+## What It Does
 
-**JomSolat** is a digital companion built for the community of **Masjid Al-Malik Khalid (Pusat Islam USM)** in Gelugor, Penang. The idea is simple: students and staff at USM should not have to guess when the next prayer is or search multiple places to find out what events are happening at the mosque.
-
-Everything lives in one place. Prayer times, mosque events, facilities info, parking guides and user accounts. All wrapped in a clean mobile-friendly interface that works even when the internet is slow.
-
-This project was built by **Team MurtaBug** as part of the **Kracked Devs Ramadan Challenge 2026 (RC26)**, a coding challenge to ship something meaningful during the holy month.
-
-> Want to see the full journey of how this app grew? Check out the [Growth Phase Documentation](https://tinyurl.com/RC26-JomSolatGrowthPhase).
+JomSolat serves as a digital companion that keeps the USM community connected with their mosque. It provides accurate prayer times with a live countdown timer, upcoming events and programmes, comprehensive mosque information including facilities and contact details, parking locations, and user authentication for a personalized experience.
 
 ---
 
@@ -265,6 +259,5 @@ This project was created for RC26 but contributions are welcome. If you spot a b
 
 *Selamat Beribadah* 🤲
 
-Built with intention during Ramadan 2026
 
 </div>

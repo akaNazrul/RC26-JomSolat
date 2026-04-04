@@ -26,13 +26,13 @@ const Feedpage: React.FC = () => {
   useEffect(() => {
     const fetchFeed = async () => {
       try {
-        const { data, error } = await supabase
-          .from('instagram_feed')
-          .select('*')
-          .order('event_date', { ascending: false });
+        const response = await fetch('/assets/feed/data.json');
+        if (!response.ok) throw new Error('Failed to load feed data');
         
-        if (error) throw error;
-        if (data) setIgData(data);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setIgData(data);
+        }
       } catch (err) {
         console.error("Error fetching mosque updates:", err);
       } finally {

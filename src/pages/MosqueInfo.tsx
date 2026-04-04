@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, Phone, Mail, Globe, MapPin, Heart, X, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePageMetadata } from '@/hooks/usePageMetadata';
 
 const QR_SRC = '/assets/Screenshot 2026-03-05 181900.png';
 
@@ -19,18 +20,10 @@ export default function MosqueInfo() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [qrEnlarged]);
 
-  useEffect(() => {
-    document.title = 'Masjid Al-Malik Khalid — Mosque Info | JomSolat';
-    const desc = document.querySelector('meta[name="description"]');
-    const content = 'Masjid Al-Malik Khalid (Pusat Islam USM) — address, contact, donation information, and opening hours.';
-    if (desc) desc.setAttribute('content', content);
-    else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = content;
-      document.head.appendChild(m);
-    }
-  }, []);
+  usePageMetadata(
+    'Masjid Al-Malik Khalid — Mosque Info | JomSolat',
+    'Masjid Al-Malik Khalid (Pusat Islam USM) — address, contact, donation information, and opening hours.'
+  );
 
   const infoRows = [
     { icon: MapPin, label: 'Address', value: 'Universiti Sains Malaysia, 11800 USM, Penang' },

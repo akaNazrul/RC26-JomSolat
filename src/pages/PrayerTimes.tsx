@@ -3,6 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 import { useAppStore } from '@/store/useAppStore';
+import { usePageMetadata } from '@/hooks/usePageMetadata';
 
 export default function PrayerTimesPage() {
   const { user, userZone, fetchPrayerData } = useAppStore();
@@ -33,18 +34,10 @@ export default function PrayerTimesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    document.title = 'Prayer Times — JomSolat';
-    const desc = document.querySelector('meta[name="description"]');
-    const content = 'Daily prayer times for Masjid Al-Malik Khalid (USM) — latest JAKIM-based schedule for the Gelugor zone.';
-    if (desc) desc.setAttribute('content', content);
-    else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = content;
-      document.head.appendChild(m);
-    }
-  }, []);
+  usePageMetadata(
+    'Prayer Times — JomSolat',
+    'Daily prayer times for Masjid Al-Malik Khalid (USM) — latest JAKIM-based schedule for the Gelugor zone.'
+  );
 
   if (loading) {
     return (

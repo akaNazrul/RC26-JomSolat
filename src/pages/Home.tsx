@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Building2, Waves, Car, Calendar, ChevronRight, Heart } from 'lucide-react';
+import { Building2, Waves, Car, ChevronRight, Heart } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import DonutTimer from '@/components/DonutTimer';
+import { usePageMetadata } from '@/hooks/usePageMetadata';
 import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 import { getSupabase } from '@/lib/supabase';
 import { sanitizeHtml } from '@/lib/security';
@@ -23,18 +24,10 @@ interface FeedEvent {
 }
 
 export default function Home() {
-  useEffect(() => {
-    document.title = 'JomSolat — Home — Prayer Times & Mosque Updates';
-    const desc = document.querySelector('meta[name="description"]');
-    const content = 'JomSolat — Accurate prayer times, mosque events and facilities for Masjid Al-Malik Khalid (USM).';
-    if (desc) desc.setAttribute('content', content);
-    else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = content;
-      document.head.appendChild(m);
-    }
-  }, []);
+  usePageMetadata(
+    'JomSolat — Home — Prayer Times & Mosque Updates',
+    'JomSolat — Accurate prayer times, mosque events and facilities for Masjid Al-Malik Khalid (USM).'
+  );
   const { user, fetchPrayerData } = useAppStore();
   const [prayerTimes, setPrayerTimes] = useState<PrayerTimeData | null>(null);
   const [currentPrayer, setCurrentPrayer] = useState<string>('fajr');
@@ -68,46 +61,28 @@ export default function Home() {
       }
     })();
 
-    // Fetch Instagram feed events for the home page carousel
+    // Fetch Instagram feed events from JSON file
     (async () => {
       try {
-        const client = getSupabase();
-        const { data, error } = await client
-          .from('instagram_feed')
-          .select('id, caption, display_url, likes_count')
-          .order('created_at', { ascending: false })
-          .limit(6);
+        const response = await fetch('/assets/feed/data.json');
+        if (!response.ok) throw new Error('Failed to load feed data');
         
-        if (error) throw error;
-        if (data) {
-          // Categorize the feed events based on keywords
-          const CLUSTERS = {
-            taraweeh: ['taraweeh', 'terawih', 'witir', 'qiyam', 'solat sunat', 'isyak'],
-            ceramah: ['ceramah', 'kuliah', 'tazkirah', 'ustaz', 'sharing', 'panel', 'ilmu'],
-            class: ['kelas', 'pengajian', 'tadabbur', 'bengkel', 'workshop', 'halaqah', 'belajar'],
-            community: ['iftar', 'berbuka', 'makan', 'rewang', 'gotong', 'sumbangan', 'sedekah']
-          };
-
-          const categorizedData = data.map((post: any) => {
-            const caption = post.caption?.toLowerCase() || '';
-            let type = 'general';
-            let maxScore = 0;
-
-            Object.entries(CLUSTERS).forEach(([category, keywords]) => {
-              const score = keywords.reduce((acc, word) => acc + (caption.includes(word) ? 1 : 0), 0);
-              if (score > maxScore) {
-                maxScore = score;
-                type = category;
-              }
-            });
-
-            return { ...post, type };
-          });
-
-          setFeedEvents(categorizedData);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          // Map JSON data to expected format
+          const feedData = data.map((post: any) => ({
+            id: post.id,
+            caption: post.caption || '',
+            display_url: post.display_url || '',
+            likes_count: post.likes_count || 0,
+            type: post.type || 'general'
+          }));
+          
+          setFeedEvents(feedData);
         }
       } catch (e) {
         console.error('Failed to fetch feed events', e);
+        setFeedEvents([]); // Set empty array on error
       }
     })();
   }, []);
@@ -125,7 +100,7 @@ export default function Home() {
     { to: '/mosque-info', icon: Building2, label: 'Mosque Info', color: 'bg-accent-primary/20 text-accent-primary' },
     { to: '/facilities', icon: Waves, label: 'Facilities', color: 'bg-blue-500/20 text-blue-500' },
     { to: '/parking', icon: Car, label: 'Parking', color: 'bg-green-500/20 text-green-500' },
-    { to: '/feed', icon: Calendar, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
+    { to: '/feed', icon: Heart, label: 'Events', color: 'bg-accent-warm/20 text-accent-warm' },
   ];
 
   return (
@@ -244,25 +219,31 @@ export default function Home() {
               {feedEvents.map((event) => (
                 <Link
                   key={event.id}
-                  to="/feed"
+                  to={`/feed#${event.id}`}
                   className="flex-shrink-0 w-40 snap-start"
                 >
                   <div className="bg-bg-surface border border-border-color rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     {/* Poster Image */}
-                    <div className="aspect-square bg-bg-elevated overflow-hidden flex items-center justify-center">
-                      <img 
-                        src={event.display_url} 
-                        alt="Feed post" 
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                        onError={(e) => {
-                          const img = e.target as HTMLImageElement;
-                          // Show a placeholder if image fails to load
-                          if (!img.src.includes('data:')) {
-                            img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23374151" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-size="16" x="50%%" y="50%%" text-anchor="middle" dominant-baseline="middle"%3EImage unavailable%3C/text%3E%3C/svg%3E';
-                          }
-                        }}
-                      />
+                    <div className="aspect-square bg-gradient-to-br from-accent-primary/20 to-accent-warm/20 overflow-hidden flex items-center justify-center">
+                      {event.display_url ? (
+                        <img 
+                          src={event.display_url} 
+                          alt="Feed post" 
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            if (!img.src.includes('data:')) {
+                              img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23374151" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-size="14" x="50%%" y="50%%" text-anchor="middle" dominant-baseline="middle"%3EImage not found%3C/text%3E%3C/svg%3E';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-center px-4">
+                          <div className="text-accent-primary text-3xl mb-2">📸</div>
+                          <p className="text-xs text-text-secondary">No image available</p>
+                        </div>
+                      )}
                     </div>
                     {/* Caption & Info */}
                     <div className="p-3 space-y-2">

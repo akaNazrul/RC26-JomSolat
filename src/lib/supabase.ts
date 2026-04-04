@@ -15,14 +15,6 @@ const getEnvVar = (name: string): string => {
 
 // Note: environment variables are validated lazily in createSupabaseClient
 
-// Security: List of allowed origins for CORS (configure in Supabase Dashboard)
-// Add your production domains to this list
-// Compute allowed origins at call-time so tests can set env before use
-const computeAllowedOrigins = (): string[] => {
-  const raw = (metaEnv && metaEnv.VITE_ALLOWED_ORIGINS) || (process.env && process.env.VITE_ALLOWED_ORIGINS) || 'http://localhost:5173';
-  return (raw as string).split(',').map((o: string) => o.trim()).filter(Boolean);
-};
-
 // Secure storage adapter using sessionStorage for better security
 // Session storage is cleared when the browser tab is closed, reducing XSS impact
 const getSecureStorage = () => {
@@ -133,17 +125,7 @@ export const supabase: any = new Proxy(
   }
 );
 
-// Export allowed origins for use in Edge Functions and CORS validation
-export const getAllowedOrigins = (): string[] => computeAllowedOrigins();
 
-// Helper to validate origin against allowed list
-export const isOriginAllowed = (origin: string): boolean => {
-  const ALLOWED_ORIGINS = computeAllowedOrigins();
-  return ALLOWED_ORIGINS.some((allowed: string) => 
-    allowed === origin || 
-    allowed === '*'
-  );
-};
 
 // Database Types
 export type Database = {

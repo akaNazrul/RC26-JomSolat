@@ -22,24 +22,7 @@ export const isValidUUID = (uuid: string): boolean => {
   return uuidRegex.test(uuid);
 };
 
-/**
- * Validate URL format
- */
-export const isValidUrl = (url: string): boolean => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
-/**
- * Validate string length
- */
-export const isValidLength = (str: string, min: number, max: number): boolean => {
-  return str.length >= min && str.length <= max;
-};
 
 // ===========================================
 // Input Sanitization
@@ -54,60 +37,17 @@ export const sanitizeHtml = (input: string): string => {
   return div.innerHTML;
 };
 
-/**
- * Strip HTML tags from string
- */
-export const stripHtml = (html: string): string => {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-};
 
-/**
- * Escape special characters for regex
- */
-export const escapeRegex = (str: string): string => {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-};
-
-/**
- * Truncate string safely
- */
-export const truncateString = (str: string, maxLength: number): string => {
-  if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 3) + '...';
-};
 
 // ===========================================
 // Security Helpers
 // ===========================================
 
-/**
- * Generate a cryptographically secure random string
- * (for tokens, OAuth state, etc.)
- */
-export const generateRandomString = (length: number): string => {
-  const array = new Uint8Array(length);
-  crypto.getRandomValues(array);
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  return Array.from(array, (byte) => chars[byte % chars.length]).join('');
-};
+
 
 // ===========================================
 // OAuth State Validation
 // ===========================================
-
-const STATE_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
-
-/**
- * Generate OAuth state with expiration for CSRF protection
- */
-export const generateOAuthState = (): string => {
-  const state = crypto.randomUUID();
-  const expiry = Date.now() + STATE_EXPIRY_MS;
-  sessionStorage.setItem('oauth_state', JSON.stringify({ state, expiry }));
-  return state;
-};
 
 /**
  * Validate OAuth state with expiration check
@@ -137,28 +77,7 @@ export const clearOAuthState = (): void => {
   sessionStorage.removeItem('oauth_state');
 };
 
-/**
- * Check if running in secure context (HTTPS)
- */
-export const isSecureContext = (): boolean => {
-  return window.location.protocol === 'https:' || 
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-};
 
-/**
- * Check if localStorage is available and working
- */
-export const isLocalStorageAvailable = (): boolean => {
-  try {
-    const test = '__storage_test__';
-    localStorage.setItem(test, test);
-    localStorage.removeItem(test);
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 // ===========================================
 // Rate Limiting (Client-side)
@@ -211,31 +130,7 @@ export class ClientRateLimiter {
 // Content Security Policy Helpers
 // ===========================================
 
-/**
- * Validate that a URL is from an allowed domain
- */
-export const isAllowedDomain = (url: string, allowedDomains: string[]): boolean => {
-  try {
-    const parsed = new URL(url);
-    return allowedDomains.some(domain => 
-      parsed.hostname === domain || 
-      parsed.hostname.endsWith(`.${domain}`)
-    );
-  } catch {
-    return false;
-  }
-};
 
-/**
- * Sanitize user input for display
- */
-export const sanitizeUserInput = (input: string): string => {
-  return input
-    .trim()
-    .replace(/[<>]/g, '') // Remove angle brackets
-    .replace(/javascript:/gi, '') // Remove javascript: URLs
-    .replace(/on\w+=/gi, ''); // Remove event handlers
-};
 
 
 // ===========================================
@@ -338,24 +233,16 @@ export const security = {
   // Validation
   isValidEmail,
   isValidUUID,
-  isValidUrl,
-  isValidLength,
   
   // Sanitization
   sanitizeHtml,
-  stripHtml,
-  escapeRegex,
-  truncateString,
-  sanitizeUserInput,
-  
-  // Helpers
-  generateRandomString,
-  isSecureContext,
-  isLocalStorageAvailable,
-  isAllowedDomain,
   
   // Rate limiting
   ClientRateLimiter,
+  
+  // OAuth
+  validateOAuthState,
+  clearOAuthState,
   
   // Password
   validatePassword,

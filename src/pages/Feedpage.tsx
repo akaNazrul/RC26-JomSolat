@@ -12,8 +12,8 @@ import {
   Loader2,
   Filter
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
 import { useAppStore } from '@/store/useAppStore';
+import { usePageMetadata } from '@/hooks/usePageMetadata';
 
 const Feedpage: React.FC = () => {
   const { theme } = useAppStore();
@@ -42,18 +42,24 @@ const Feedpage: React.FC = () => {
     fetchFeed();
   }, []);
 
+  // Scroll to post from URL hash
   useEffect(() => {
-    document.title = 'Mosque Updates — JomSolat';
-    const desc = document.querySelector('meta[name="description"]');
-    const content = 'Latest community updates, events and announcements from Masjid Al-Malik Khalid (Pusat Islam USM).';
-    if (desc) desc.setAttribute('content', content);
-    else {
-      const m = document.createElement('meta');
-      m.name = 'description';
-      m.content = content;
-      document.head.appendChild(m);
+    if (loading) return;
+    const hash = window.location.hash.slice(1);
+    if (hash) {
+      setTimeout(() => {
+        const element = document.getElementById(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     }
-  }, []);
+  }, [loading]);
+
+  usePageMetadata(
+    'Mosque Updates — JomSolat',
+    'Latest community updates, events and announcements from Masjid Al-Malik Khalid (Pusat Islam USM).'
+  );
 
   // THE INTELLIGENT ENGINE: Mapping, Categorizing, and Scoring
   const processedData = useMemo(() => {
@@ -263,7 +269,17 @@ const Feedpage: React.FC = () => {
                   </div>
 
                   <div className="aspect-square bg-bg-base mx-4 rounded-[2rem] overflow-hidden shadow-inner">
-                    <img src={`https://images.weserv.nl/?url=${encodeURIComponent(post.display_url)}`} alt="Mosque post" className="w-full h-full object-cover" />
+                    <img 
+                      src={post.display_url} 
+                      alt="Mosque post" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        if (!img.src.includes('data:')) {
+                          img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23374151" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-size="14" x="50%%" y="50%%" text-anchor="middle" dominant-baseline="middle"%3EImage not found%3C/text%3E%3C/svg%3E';
+                        }
+                      }}
+                    />
                   </div>
 
                   <div className="p-6 space-y-4">

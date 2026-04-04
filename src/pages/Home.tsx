@@ -6,7 +6,6 @@ import DonutTimer from '@/components/DonutTimer';
 import { PRAYER_ORDER, formatTime, getCurrentPrayer, type PrayerTimeData } from '@/lib/prayerTimes';
 import { getSupabase } from '@/lib/supabase';
 import { sanitizeHtml } from '@/lib/security';
-import QiblaCompass from '@/components/QiblaCompass';
 
 interface UpcomingEvent {
   id: string;
@@ -283,12 +282,6 @@ export default function Home() {
           ) : (
             <p className="font-body text-sm text-text-muted text-center py-4">No feed updates available</p>
           )}
-        </div>
-
-        {/* Qibla Compass */}
-        <div>
-          <h2 className="font-display text-lg text-text-primary mb-4">Qibla Direction</h2>
-          <QiblaCompass />
         </div>
 
         {/* KrackedDevs Promo */}

@@ -46,7 +46,6 @@ Lighthouse PWA score	≥ 90	≥ 95
 
 ▌ 1.5  Out of Scope (RC26 Phase)
 •	Native iOS / Android app — PWA only for this phase
-•	Qibla direction compass (post-MVP feature)
 •	Quran reader or audio streaming
 •	Booking system for mosque facilities
 •	Multi-mosque support — single mosque only
@@ -462,7 +461,6 @@ Prayer reminder notifications	P2	Post-MVP	Browser push notifications
 Arabic prayer names display	P2	MVP	Noto Naskh Arabic font rendering
 Hijri date display	P2	MVP	Convert Gregorian using hijri-js library
 Add to Calendar (events)	P2	Post-MVP	ICS file generation
-Qibla compass	P3	Post-MVP	Device gyroscope + magnetic north
 Multi-language (BM)	P3	Post-MVP	i18n support
 Quran reader	P3	Post-MVP	Out of scope RC26
 

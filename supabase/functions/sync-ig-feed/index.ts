@@ -43,6 +43,60 @@ const getCorsHeaders = (origin: string): Record<string, string> => {
   };
 };
 
+/**
+ * Download image from Instagram and upload to Supabase Storage
+ */
+async function downloadAndUploadImage(
+  imageUrl: string, 
+  postId: string, 
+  supabase: any
+): Promise<string | null> {
+  try {
+    // Download the image from Instagram
+    const response = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      console.warn(`Failed to download image for post ${postId}: ${response.status}`);
+      return null;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = new Uint8Array(arrayBuffer);
+
+    // Determine file extension from content-type
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    const ext = contentType.includes('webp') ? 'webp' : contentType.includes('png') ? 'png' : 'jpg';
+    const filename = `${postId}.${ext}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('instagram-feed')
+      .upload(filename, buffer, {
+        contentType: contentType,
+        upsert: true
+      });
+
+    if (error) {
+      console.warn(`Failed to upload image for post ${postId}:`, error);
+      return null;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('instagram-feed')
+      .getPublicUrl(filename);
+
+    return urlData?.publicUrl || null;
+  } catch (err) {
+    console.warn(`Error processing image for post ${postId}:`, err);
+    return null;
+  }
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin') || '';
   const corsHeadersForRequest = getCorsHeaders(origin);
@@ -153,27 +207,52 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // MAPPING DATA TO YOUR ACTUAL COLUMNS with validation
-    const formattedPosts = limitedItems.map((post: any) => ({
-      id: typeof post.id === 'string' || typeof post.id === 'number' ? String(post.id).slice(0, 255) : null,
-      caption: typeof post.caption === 'string' ? post.caption.slice(0, 2000) : "",
-      display_url: typeof post.displayUrl === 'string' ? post.displayUrl.slice(0, 2048) : "",
-      ig_url: typeof post.url === 'string' ? post.url.slice(0, 2048) : "",
-      likes_count: typeof post.likesCount === 'number' ? Math.min(post.likesCount, 2147483647) : 0,
-      // Mapping the Instagram timestamp to your 'event_date' column
-      event_date: post.timestamp ? (() => {
-        try {
-          const date = new Date(post.timestamp);
-          return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
-        } catch {
-          return null;
-        }
-      })() : null,
-      // 'created_at' is usually handled by Supabase, but we can set it manually
-      created_at: post.timestamp || new Date().toISOString()
-    })).filter((post: any) => post.id !== null); // Filter out invalid posts
+    // Create bucket if it doesn't exist
+    try {
+      await supabase.storage.createBucket('instagram-feed', { 
+        public: true,
+        allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp']
+      });
+    } catch (e: any) {
+      // Bucket might already exist, that's fine
+      if (!e.message?.includes('already exists')) {
+        console.warn('Bucket creation warning:', e.message);
+      }
+    }
 
-    if (formattedPosts.length === 0) {
+    // MAPPING DATA TO YOUR ACTUAL COLUMNS with validation
+    // Process images and format posts
+    const formattedPosts = await Promise.all(
+      limitedItems.map(async (post: any) => {
+        // Download and upload image to Supabase Storage
+        let storageUrl = null;
+        if (post.displayUrl) {
+          storageUrl = await downloadAndUploadImage(post.displayUrl, String(post.id), supabase);
+        }
+
+        return {
+          id: typeof post.id === 'string' || typeof post.id === 'number' ? String(post.id).slice(0, 255) : null,
+          caption: typeof post.caption === 'string' ? post.caption.slice(0, 2000) : "",
+          display_url: storageUrl || (typeof post.displayUrl === 'string' ? post.displayUrl.slice(0, 2048) : ""),
+          ig_url: typeof post.url === 'string' ? post.url.slice(0, 2048) : "",
+          likes_count: typeof post.likesCount === 'number' ? Math.min(post.likesCount, 2147483647) : 0,
+          // Mapping the Instagram timestamp to your 'event_date' column
+          event_date: post.timestamp ? (() => {
+            try {
+              const date = new Date(post.timestamp);
+              return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+            } catch {
+              return null;
+            }
+          })() : null,
+          // 'created_at' is usually handled by Supabase, but we can set it manually
+          created_at: post.timestamp || new Date().toISOString()
+        };
+      })
+    );
+
+    // Filter out invalid posts
+    if (validPosts.length === 0) {
       return new Response(JSON.stringify({ success: true, synced: 0, message: 'No valid posts to sync' }), { 
         status: 200,
         headers: { ...corsHeadersForRequest, 'Content-Type': 'application/json' },
@@ -182,14 +261,14 @@ Deno.serve(async (req) => {
 
     const { error } = await supabase
       .from('instagram_feed')
-      .upsert(formattedPosts, { onConflict: 'id' });
+      .upsert(validPosts, { onConflict: 'id' });
 
     if (error) {
       console.error('Supabase upsert error:', error);
       throw error;
     }
     
-    return new Response(JSON.stringify({ success: true, synced: formattedPosts.length }), { 
+    return new Response(JSON.stringify({ success: true, synced: validPosts.length }), {
       status: 200,
       headers: { ...corsHeadersForRequest, 'Content-Type': 'application/json' },
     });

@@ -251,14 +251,14 @@ export default function Home() {
                     {/* Poster Image */}
                     <div className="aspect-square bg-bg-elevated overflow-hidden flex items-center justify-center">
                       <img 
-                        src={`https://images.weserv.nl/?url=${encodeURIComponent(event.display_url)}&w=400&h=400&fit=cover`} 
+                        src={event.display_url} 
                         alt="Feed post" 
                         className="w-full h-full object-cover"
                         loading="lazy"
                         onError={(e) => {
                           const img = e.target as HTMLImageElement;
-                          // If weserv fails, show a placeholder
-                          if (!img.src.includes('placeholder')) {
+                          // Show a placeholder if image fails to load
+                          if (!img.src.includes('data:')) {
                             img.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect fill="%23374151" width="400" height="400"/%3E%3Ctext fill="%239CA3AF" font-size="16" x="50%%" y="50%%" text-anchor="middle" dominant-baseline="middle"%3EImage unavailable%3C/text%3E%3C/svg%3E';
                           }
                         }}
